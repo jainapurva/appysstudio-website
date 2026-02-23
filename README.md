@@ -26,4 +26,4 @@ Deploy to GitHub Pages:
 
 ## Contact
 
-apurvajain.kota@gmail.com
+appysstudiorobotics@gmail.com
