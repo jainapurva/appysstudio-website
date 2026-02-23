@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AppysStudio — Hardware Meets Intelligence</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <span class="logo-bracket">[</span>appys<span class="logo-accent">studio</span><span class="logo-bracket">]</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#products">Products</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="grid-overlay"></div>
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Hardware × Intelligence</p>
+      <h1 class="hero-title">
+        We build robots<br />
+        that <span class="title-accent">think, feel</span><br />
+        and <span class="title-accent">talk back.</span>
+      </h1>
+      <p class="hero-sub">
+        From breadboard prototypes to AI-powered companions — AppysStudio creates
+        embedded systems where hardware meets intelligence.
+      </p>
+      <div class="hero-actions">
+        <a href="#products" class="btn btn-primary">Explore Products</a>
+        <a href="#about" class="btn btn-ghost">Our Story</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="eye-container">
+        <div class="robot-eye left-eye">
+          <div class="pupil"></div>
+        </div>
+        <div class="robot-eye right-eye">
+          <div class="pupil"></div>
+        </div>
+      </div>
+      <p class="eye-label mono">// Pet Robot v2 — XIAO ESP32S3</p>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="products" id="products">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow mono">// our products</p>
+        <h2 class="section-title">What We're Building</h2>
+        <p class="section-sub">Three products. One vision — make hardware alive.</p>
+      </div>
+
+      <div class="product-grid">
+
+        <!-- PRODUCT 1: Pet Robot -->
+        <div class="product-card featured">
+          <div class="card-badge">Available Now</div>
+          <div class="card-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="12" y="20" width="40" height="30" rx="8" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/>
+              <rect x="20" y="28" width="10" height="8" rx="5" fill="currentColor"/>
+              <rect x="34" y="28" width="10" height="8" rx="5" fill="currentColor"/>
+              <line x1="22" y1="14" x2="22" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="42" y1="14" x2="42" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="22" cy="12" r="3" fill="currentColor"/>
+              <circle cx="42" cy="12" r="3" fill="currentColor"/>
+              <path d="M26 42 Q32 47 38 42" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Pet Robot</h3>
+            <p class="card-subtitle mono">ESP32 / XIAO ESP32S3</p>
+            <p class="card-desc">
+              A conversational desktop companion with expressive animated puppy eyes,
+              voice interaction powered by GPT-4o, and real-time emotion-synced facial
+              expressions. It listens, responds, sings, and reacts to your touch.
+            </p>
+
+            <div class="feature-list">
+              <div class="feature">
+                <span class="feature-icon">👁</span>
+                <div>
+                  <strong>Expressive Animated Eyes</strong>
+                  <span>8 expressions on SSD1306 OLED — happy, sad, curious, surprised & more</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🎙</span>
+                <div>
+                  <strong>AI Voice Conversation</strong>
+                  <span>Whisper STT → GPT-4o Chat → OpenAI TTS — full voice loop</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">✋</span>
+                <div>
+                  <strong>Touch Reactions</strong>
+                  <span>Tap the head for happy chirps, long press to start a conversation</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🎵</span>
+                <div>
+                  <strong>Music Player</strong>
+                  <span>Synthesized tones with emotion-synced expressions on a dedicated FreeRTOS core</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🧠</span>
+                <div>
+                  <strong>Swappable Personalities</strong>
+                  <span>SD card personality files — playful, calm, zen, or write your own</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="variants">
+              <p class="variants-label mono">// hardware variants</p>
+              <div class="variant-pills">
+                <span class="pill pill-done">ESP32-WROOM-32 ✓</span>
+                <span class="pill pill-wip">XIAO ESP32S3 — in progress</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="pet-robot.html" class="btn btn-primary btn-sm">Learn More</a>
+            <a href="https://github.com/Jainapurva/Arduino" class="btn btn-outline btn-sm" target="_blank">View Code</a>
+          </div>
+        </div>
+
+        <!-- PRODUCT 2: Breadboard Dev Kit -->
+        <div class="product-card">
+          <div class="card-badge card-badge-soon">Coming Soon</div>
+          <div class="card-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="24" width="48" height="20" rx="4" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="2"/>
+              <line x1="16" y1="20" x2="16" y2="48" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="24" y1="20" x2="24" y2="48" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="32" y1="20" x2="32" y2="48" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="40" y1="20" x2="40" y2="48" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <line x1="48" y1="20" x2="48" y2="48" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <circle cx="16" cy="32" r="3" fill="currentColor"/>
+              <circle cx="32" cy="32" r="3" fill="currentColor"/>
+              <circle cx="48" cy="32" r="3" fill="currentColor"/>
+              <path d="M16 32 L24 28 L32 32 L40 28 L48 32" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Breadboard Developer Kit</h3>
+            <p class="card-subtitle mono">ESP32 · Arduino · Plug & Play</p>
+            <p class="card-desc">
+              A curated hardware kit for rapid prototyping with ESP32 and Arduino.
+              Everything you need to build smart embedded projects — pre-tested components,
+              wiring guides, and starter code to get from idea to working prototype fast.
+            </p>
+
+            <div class="feature-list">
+              <div class="feature">
+                <span class="feature-icon">📦</span>
+                <div>
+                  <strong>Curated Components</strong>
+                  <span>OLED display, I2S mic, amp, touch sensors, jumper wires — all pre-tested</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🔌</span>
+                <div>
+                  <strong>Plug & Play Setup</strong>
+                  <span>Color-coded wiring diagrams and pinout guides included</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">💻</span>
+                <div>
+                  <strong>Starter Code Library</strong>
+                  <span>Working examples for audio, display, touch, WiFi, and AI integration</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">📚</span>
+                <div>
+                  <strong>Step-by-Step Docs</strong>
+                  <span>Build the Pet Robot from scratch — or invent your own project</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="specs-placeholder">
+              <p class="mono" style="font-size:0.75rem; opacity:0.5;">// Full BOM and pricing coming soon</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#contact" class="btn btn-primary btn-sm">Join Waitlist</a>
+          </div>
+        </div>
+
+        <!-- PRODUCT 3: Agentic Arduino -->
+        <div class="product-card">
+          <div class="card-badge card-badge-building">In Development</div>
+          <div class="card-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="32" r="20" fill="currentColor" opacity="0.1" stroke="currentColor" stroke-width="2"/>
+              <circle cx="32" cy="32" r="10" fill="currentColor" opacity="0.2" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="32" cy="32" r="4" fill="currentColor"/>
+              <line x1="32" y1="8" x2="32" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="32" y1="46" x2="32" y2="56" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="8" y1="32" x2="18" y2="32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="46" y1="32" x2="56" y2="32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="15" y1="15" x2="22" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="42" y1="42" x2="49" y2="49" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="49" y1="15" x2="42" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="22" y1="42" x2="15" y2="49" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-content">
+            <h3 class="card-title">Agentic Arduino</h3>
+            <p class="card-subtitle mono">AI · Autonomy · Edge</p>
+            <p class="card-desc">
+              An Arduino platform with embedded agentic AI — capable of autonomous
+              decision-making, tool use, and multi-step task execution entirely on the
+              edge. No cloud required for reasoning. The next frontier of embedded intelligence.
+            </p>
+
+            <div class="feature-list">
+              <div class="feature">
+                <span class="feature-icon">🤖</span>
+                <div>
+                  <strong>Autonomous Decision Making</strong>
+                  <span>On-device AI agent loop — perceive, reason, act without cloud</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🔧</span>
+                <div>
+                  <strong>Tool Use on Hardware</strong>
+                  <span>Agent can call hardware functions — move, sense, speak, display</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">🌐</span>
+                <div>
+                  <strong>Hybrid Cloud + Edge</strong>
+                  <span>Falls back to cloud APIs for complex reasoning when WiFi available</span>
+                </div>
+              </div>
+              <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <div>
+                  <strong>Low-Power Design</strong>
+                  <span>Optimized for battery-powered, always-on agentic operation</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dev-status">
+              <p class="mono" style="font-size:0.75rem; opacity:0.6; margin-bottom:0.5rem;">// development status</p>
+              <div class="status-bar">
+                <div class="status-fill" style="width: 15%"></div>
+              </div>
+              <p class="mono" style="font-size:0.7rem; opacity:0.4; margin-top:0.3rem;">Early research phase — 15% complete</p>
+            </div>
+          </div>
+          <div class="card-footer">
+            <a href="#contact" class="btn btn-ghost btn-sm">Follow Progress</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="tech-section">
+    <div class="container">
+      <p class="section-eyebrow mono">// tech stack</p>
+      <h2 class="section-title">Built With</h2>
+      <div class="tech-grid">
+        <div class="tech-item"><span class="tech-name">Arduino</span><span class="tech-desc">ESP32 Core 3.3.7</span></div>
+        <div class="tech-item"><span class="tech-name">FreeRTOS</span><span class="tech-desc">Multitasking</span></div>
+        <div class="tech-item"><span class="tech-name">GPT-4o</span><span class="tech-desc">Conversation AI</span></div>
+        <div class="tech-item"><span class="tech-name">Whisper</span><span class="tech-desc">Speech to Text</span></div>
+        <div class="tech-item"><span class="tech-name">OpenAI TTS</span><span class="tech-desc">Voice Output</span></div>
+        <div class="tech-item"><span class="tech-name">SSD1306</span><span class="tech-desc">OLED Display</span></div>
+        <div class="tech-item"><span class="tech-name">I2S</span><span class="tech-desc">Audio Pipeline</span></div>
+        <div class="tech-item"><span class="tech-name">RoboEyes</span><span class="tech-desc">Animated Expressions</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-content">
+          <p class="section-eyebrow mono">// about</p>
+          <h2 class="section-title">AppysStudio</h2>
+          <p>
+            We're a small hardware studio obsessed with making embedded systems feel
+            alive. We believe the next generation of personal devices won't just execute
+            commands — they'll understand, respond, and have personality.
+          </p>
+          <p>
+            Starting with the Pet Robot, we're exploring what happens when you give
+            hardware a voice, a face, and a mind. Every product we build is an experiment
+            in making technology more human.
+          </p>
+          <p style="opacity:0.5; font-size:0.85rem;">
+            <span class="mono">// More about us coming soon</span>
+          </p>
+        </div>
+        <div class="about-stats">
+          <div class="stat">
+            <span class="stat-num">3</span>
+            <span class="stat-label">Products in Pipeline</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">2</span>
+            <span class="stat-label">Hardware Variants</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">10</span>
+            <span class="stat-label">Emotion States</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">∞</span>
+            <span class="stat-label">Personalities Possible</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="contact-inner">
+        <p class="section-eyebrow mono">// get in touch</p>
+        <h2 class="section-title">Interested?</h2>
+        <p class="contact-sub">
+          Whether you want to buy a Pet Robot, get a Developer Kit, follow the
+          Agentic Arduino project, or just say hi — we'd love to hear from you.
+        </p>
+        <div class="contact-actions">
+          <a href="mailto:apurvajain.kota@gmail.com" class="btn btn-primary">Email Us</a>
+          <a href="https://github.com/Jainapurva" class="btn btn-outline" target="_blank">GitHub</a>
+        </div>
+        <p class="contact-note mono">// apurvajain.kota@gmail.com</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="nav-logo">
+          <span class="logo-bracket">[</span>appys<span class="logo-accent">studio</span><span class="logo-bracket">]</span>
+        </span>
+        <p class="footer-copy">© 2026 AppysStudio. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="https://github.com/Jainapurva" target="_blank">GitHub</a>
+          <a href="mailto:apurvajain.kota@gmail.com">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

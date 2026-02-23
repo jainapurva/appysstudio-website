@@ -1,0 +1,29 @@
+# AppysStudio — Product Showcase Website
+
+A static website showcasing AppysStudio hardware products.
+
+## Products
+
+- **Pet Robot** — AI-powered conversational companion with animated eyes (ESP32 / XIAO ESP32S3)
+- **Breadboard Developer Kit** — Curated ESP32 prototyping kit (coming soon)
+- **Agentic Arduino** — On-device AI agent platform (in development)
+
+## Structure
+
+```
+index.html       # Main landing page
+pet-robot.html   # Pet Robot detail page
+style.css        # Styles
+script.js        # Animations & interactions
+```
+
+## Deployment
+
+Deploy to GitHub Pages:
+1. Go to repo Settings → Pages
+2. Set source to `main` branch, `/ (root)` folder
+3. Site will be live at `https://jainapurva.github.io/appysstudio-website/`
+
+## Contact
+
+apurvajain.kota@gmail.com
