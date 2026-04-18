@@ -1,0 +1,93 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    tags:
+      - 'deploy-*'
+
+concurrency:
+  group: deploy-appysstudio
+  cancel-in-progress: false
+
+env:
+  AWS_HOST: ${{ secrets.EC2_HOST }}
+  AWS_USER: ubuntu
+  REMOTE_DIR: /opt/3dprints-shop
+  SERVICE_NAME: appysstudio-website
+  DOMAIN: appysstudio.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build Next.js (standalone)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_URL: https://appysstudio.com
+
+      - name: Verify standalone build
+        run: |
+          test -d .next/standalone || { echo "::error::.next/standalone missing — next.config.ts must set output: 'standalone'"; exit 1; }
+          test -f .next/standalone/server.js || { echo "::error::server.js missing from standalone build"; exit 1; }
+          echo "Build ID: $(cat .next/BUILD_ID)"
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Ensure remote dirs exist
+        run: |
+          ssh -i ~/.ssh/deploy_key "$AWS_USER@$AWS_HOST" "sudo mkdir -p $REMOTE_DIR/data && sudo chown -R $AWS_USER:$AWS_USER $REMOTE_DIR"
+
+      - name: Upload standalone build
+        run: |
+          rsync -az --delete \
+            --exclude='data/' \
+            --exclude='.env' \
+            --exclude='public/uploads/' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            .next/standalone/ "$AWS_USER@$AWS_HOST:$REMOTE_DIR/"
+
+      - name: Upload static assets
+        run: |
+          rsync -az \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            .next/static/ "$AWS_USER@$AWS_HOST:$REMOTE_DIR/.next/static/"
+
+      - name: Upload public/
+        run: |
+          rsync -az \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            public/ "$AWS_USER@$AWS_HOST:$REMOTE_DIR/public/"
+
+      - name: Restart service
+        run: |
+          ssh -i ~/.ssh/deploy_key "$AWS_USER@$AWS_HOST" "sudo systemctl restart $SERVICE_NAME && sleep 3 && sudo systemctl is-active $SERVICE_NAME"
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/deploy_key "$AWS_USER@$AWS_HOST" "sudo ss -tlnp | grep ':3001' || { echo '::error::Port 3001 not listening'; exit 1; }"
+          HTTP=$(curl -sS -o /dev/null -w '%{http_code}' "https://$DOMAIN/")
+          echo "HTTPS status for https://$DOMAIN/: $HTTP"
+          test "$HTTP" = "200" || { echo "::error::Site not returning 200 (got $HTTP)"; exit 1; }
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
