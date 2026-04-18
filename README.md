@@ -4,7 +4,6 @@ A static website showcasing AppysStudio hardware products.
 
 ## Products
 
-- **Pet Robot** — AI-powered conversational companion with animated eyes (ESP32 / XIAO ESP32S3)
 - **Breadboard Developer Kit** — Curated ESP32 prototyping kit (coming soon)
 - **Agentic Arduino** — On-device AI agent platform (in development)
 
@@ -12,7 +11,6 @@ A static website showcasing AppysStudio hardware products.
 
 ```
 index.html       # Main landing page
-pet-robot.html   # Pet Robot detail page
 style.css        # Styles
 script.js        # Animations & interactions
 ```
