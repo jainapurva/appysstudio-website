@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# AWS Deployment Script for 3dprints-shop (Appy's Studio)
+# AWS Deployment Script for appysstudio-website (Appy's Studio)
 # Builds locally, deploys standalone Next.js app to EC2
 # Domain: appysstudio.com  |  Port: 3001
 ###############################################################################
@@ -19,9 +19,9 @@ NC='\033[0m'
 # Configuration
 AWS_HOST="3.238.88.157"
 AWS_USER="ubuntu"
-SSH_KEY="/media/ddarji/storage/git/free_uploader/socialAI.pem"
+SSH_KEY="/media/ddarji/storage/.ssh/appysstudio_deploy"
 REMOTE_DIR="/opt/3dprints-shop"
-SERVICE_NAME="3dprints-shop"
+SERVICE_NAME="appysstudio-website"
 DOMAIN="appysstudio.com"
 PORT=3001
 
@@ -155,10 +155,10 @@ echo ""
 # ============================================================================
 echo -e "${YELLOW}Step 6: Configuring systemd service...${NC}"
 
-ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" << 'ENDSSH'
-sudo tee /etc/systemd/system/3dprints-shop.service > /dev/null <<'SERVICE_EOF'
+ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" << ENDSSH
+sudo tee /etc/systemd/system/${SERVICE_NAME}.service > /dev/null <<'SERVICE_EOF'
 [Unit]
-Description=Appy's Studio - 3D Prints Shop (Next.js)
+Description=Appy Studio Website (Next.js) — appysstudio.com
 After=network.target
 
 [Service]
@@ -181,7 +181,7 @@ WantedBy=multi-user.target
 SERVICE_EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable 3dprints-shop
+sudo systemctl enable ${SERVICE_NAME}
 ENDSSH
 
 echo -e "${GREEN}  Service configured${NC}"
@@ -255,11 +255,11 @@ echo ""
 # ============================================================================
 echo -e "${YELLOW}Step 9: Starting service...${NC}"
 
-ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" << 'ENDSSH'
-sudo systemctl restart 3dprints-shop
+ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" << ENDSSH
+sudo systemctl restart ${SERVICE_NAME}
 sleep 3
 echo "Service status:"
-sudo systemctl is-active 3dprints-shop
+sudo systemctl is-active ${SERVICE_NAME}
 ENDSSH
 
 echo -e "${GREEN}  Service started${NC}"
@@ -272,12 +272,12 @@ echo -e "${YELLOW}Step 10: Verifying deployment...${NC}"
 
 VERIFY_FAILED=0
 
-# Check 3dprints-shop service
-if ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" "sudo systemctl is-active --quiet 3dprints-shop"; then
-    echo -e "${GREEN}  3dprints-shop service: active${NC}"
+# Check service status
+if ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" "sudo systemctl is-active --quiet ${SERVICE_NAME}"; then
+    echo -e "${GREEN}  ${SERVICE_NAME} service: active${NC}"
 else
-    echo -e "${RED}  3dprints-shop service: FAILED${NC}"
-    ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" "sudo journalctl -u 3dprints-shop -n 15 --no-pager"
+    echo -e "${RED}  ${SERVICE_NAME} service: FAILED${NC}"
+    ssh -i "$SSH_KEY" "$AWS_USER@$AWS_HOST" "sudo journalctl -u ${SERVICE_NAME} -n 15 --no-pager"
     VERIFY_FAILED=1
 fi
 
@@ -322,9 +322,9 @@ echo "   https://appysstudio.com"
 echo "   https://freetools.us (should be unaffected)"
 echo ""
 echo "Server commands:"
-echo "   Status:   ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo systemctl status 3dprints-shop'"
-echo "   Logs:     ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo journalctl -u 3dprints-shop -f'"
-echo "   Restart:  ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo systemctl restart 3dprints-shop'"
+echo "   Status:   ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo systemctl status ${SERVICE_NAME}'"
+echo "   Logs:     ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo journalctl -u ${SERVICE_NAME} -f'"
+echo "   Restart:  ssh -i $SSH_KEY $AWS_USER@$AWS_HOST 'sudo systemctl restart ${SERVICE_NAME}'"
 echo ""
 echo "Post-deploy checklist:"
 echo "   1. Create /opt/3dprints-shop/.env on server (if first deploy)"
