@@ -8,6 +8,66 @@ E-commerce website for Appy's Studio — 3D printing & robotics. Built with Next
 > The static HTML site that used to live in this repo is preserved on the
 > `archive/static-site` branch for reference only.
 
+## Agent Workflow (read before starting any task)
+
+### Day-to-day
+1. **Confirm repo + account.** Git remote should point to
+   `git@github-jainapurva:jainapurva/appysstudio-website.git` and
+   `gh auth status` should show `jainapurva` as active. If not, run
+   `gh auth switch -u jainapurva`.
+2. **Pull latest before working.** Another agent session or a manual
+   deploy may have pushed commits. `git pull --rebase origin main` first.
+3. **Don't push to `jainapurva/printcraft-shop`.** It's archived. If you
+   find yourself pointed there, the remote is wrong — fix it.
+4. **Keep `output: 'standalone'`** in `next.config.ts`. The CI deploy
+   will fail loudly if the standalone build disappears, but don't change
+   it in the first place.
+
+### Making changes
+1. Edit code; run `npm run dev` to verify locally on port 3000.
+2. `npm run build` before committing — catches type and build errors CI
+   would catch later.
+3. `npm test` if you touched anything under `__tests__/` or the code it
+   covers.
+4. Commit to `main` with a clear message. No PR flow required (solo repo).
+
+### Shipping to production
+Tag and push:
+```bash
+git tag deploy-$(date +%Y-%m-%d-%H%M)
+git push origin --tags
+```
+Watch: `gh run watch --repo jainapurva/appysstudio-website`.
+
+**After the workflow completes, verify live:**
+```bash
+curl -sI https://appysstudio.com/ | head -1               # expect 200
+curl -sI https://appysstudio.com/<changed-route> | head -1
+```
+If the deploy verify step passed but something looks wrong:
+```bash
+ssh -i /media/ddarji/storage/.ssh/appysstudio_deploy ubuntu@3.238.88.157 \
+  "sudo journalctl -u appysstudio-website -n 100 --no-pager"
+```
+
+### Rollback
+Tag an older commit as `deploy-rollback-*`:
+```bash
+git tag deploy-rollback-$(date +%Y-%m-%d-%H%M) <known-good-sha>
+git push origin --tags
+```
+CI redeploys that commit. Takes ~1 min.
+
+### What NOT to do
+- Don't kill processes on the EC2 without checking — `freetools.us`
+  shares the box on port 3000.
+- Don't rename `/opt/3dprints-shop/` on the server. The path is hard-coded
+  in the systemd unit (`WorkingDirectory` + `EnvironmentFile`) and in
+  `deploy_to_aws.sh`. Renaming requires coordinated changes across all three.
+- Don't commit `.env.local`, `*.pem`, or anything under `data/`.
+- Don't modify `.github/workflows/deploy.yml` without at least a dry-run
+  understanding — a broken workflow blocks all future deploys.
+
 ## Architecture
 - **Framework:** Next.js 16 (App Router, Turbopack)
 - **Auth:** NextAuth with optional Google/Facebook/Apple OAuth
@@ -129,6 +189,20 @@ Builder features: shape selector (circle/rectangle/rounded), size selector (S/M/
 - Custom size shows amber warning: "may vary in price — we'll confirm before processing"
 
 ## Recent Changes (newest first)
+- 2026-04-18: **Repo migration + CI deploy + service rename**
+  - Shop code migrated from `jainapurva/printcraft-shop` (now archived) into
+    this repo. Static HTML site preserved on `archive/static-site` branch.
+  - Added `.github/workflows/deploy.yml` — CI deploy triggered by `deploy-*` tags
+    (builds locally, rsyncs `.next/standalone` + static + public to EC2,
+    restarts service, verifies site returns 200).
+  - New deploy-only SSH key at `/media/ddarji/storage/.ssh/appysstudio_deploy`;
+    added to EC2 `authorized_keys` and to GitHub Actions as `EC2_DEPLOY_KEY`
+    secret. Shared `socialAI.pem` still works but no longer used by CI.
+  - Systemd service renamed `3dprints-shop` → `appysstudio-website` on EC2.
+    Unit file updated, old service removed. Server app dir unchanged
+    (`/opt/3dprints-shop/`).
+  - `/robotics` page replaced — removed Pet Robot, kept Breadboard Developer
+    Kit (Coming Soon) + Agentic Arduino (In Development).
 - 2026-03-02: Added Stackable Organizer Box product with full customization UI
   - Color picker with Elegoo (10 colors) / Sunlu (12 colors) brand toggle
   - With/without divider toggle
@@ -188,10 +262,15 @@ const client = new SquareClient({
 - If port 3001 is stuck on deploy: `sudo fuser -k 3001/tcp` then restart service
 - Another service (freetools.us) runs on port 3000 on the same EC2 — don't disturb it
 
-## Current State (as of 2026-02-28)
-- Everything committed, pushed to GitHub, and deployed to production
-- 3 products in shop + Custom Swag builder page
-- Square payments working in production (verify-on-redirect flow)
-- Gmail notifications active (appysstudioca@gmail.com)
-- Production running on AWS EC2 with SSL at https://appysstudio.com
-- Server `.env` has Square production credentials, Gmail, NextAuth configured
+## Current State (as of 2026-04-18)
+- Canonical repo `jainapurva/appysstudio-website`; `printcraft-shop` archived.
+- CI deploy wired and verified end-to-end (first successful run: tag
+  `deploy-2026-04-18-1`).
+- Systemd service `appysstudio-website` active and enabled on EC2. Port
+  3001 listening. https://appysstudio.com returns 200.
+- Square payments live (verify-on-redirect flow). Gmail notifications active.
+- WIP features deployed: 3D model generator, AI credits, image upload,
+  Swayat page, ModelViewer, Stackable Organizer Box customization.
+- `.github/workflows/deploy.yml` in place, `EC2_DEPLOY_KEY` + `EC2_HOST`
+  secrets configured.
+- GitHub Pages disabled on this repo (hosting is exclusively EC2).
