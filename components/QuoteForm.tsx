@@ -42,73 +42,73 @@ export default function QuoteForm() {
           <CheckCircle className="w-10 h-10 text-emerald-400" />
         </div>
         <h3 className="text-2xl font-extrabold mb-3 text-white">Quote Request Received!</h3>
-        <p className="text-gray-400 leading-relaxed">We&apos;ll review your file and get back to you with pricing and lead time within 24 hours.</p>
+        <p className="text-stone-400 leading-relaxed">We&apos;ll review your file and get back to you with pricing and lead time within 24 hours.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 rounded-3xl border border-gray-800 p-8 space-y-6">
+    <form onSubmit={handleSubmit} className="bg-stone-800 rounded-3xl border border-stone-700 p-8 space-y-6">
       {/* File Upload */}
       <div>
-        <label className="block text-sm font-bold text-gray-200 mb-2">3D File *</label>
-        <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-700 rounded-2xl cursor-pointer hover:border-purple-500 transition-all bg-gray-800/50 hover:bg-gray-800 group">
-          <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-purple-500/20 transition-colors ring-1 ring-purple-500/20">
-            {file ? <FileUp className="w-6 h-6 text-purple-400" /> : <Upload className="w-6 h-6 text-purple-400" />}
+        <label className="block text-sm font-bold text-stone-200 mb-2">3D File *</label>
+        <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-600 rounded-2xl cursor-pointer hover:border-amber-500 transition-all bg-stone-700/50 hover:bg-stone-700 group">
+          <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-amber-500/20 transition-colors ring-1 ring-amber-500/20">
+            {file ? <FileUp className="w-6 h-6 text-amber-400" /> : <Upload className="w-6 h-6 text-amber-400" />}
           </div>
-          <span className="text-sm text-gray-300 font-medium">{file ? file.name : 'Click to upload (STL, OBJ, 3MF, STEP, FBX, PLY, AMF...)'}</span>
-          <span className="text-xs text-gray-500 mt-1">Max 50MB</span>
+          <span className="text-sm text-stone-300 font-medium">{file ? file.name : 'Click to upload (STL, OBJ, 3MF, STEP, FBX, PLY, AMF...)'}</span>
+          <span className="text-xs text-stone-500 mt-1">Max 50MB</span>
           <input type="file" accept=".stl,.obj,.3mf,.step,.stp,.iges,.igs,.fbx,.ply,.amf,.gcode" className="hidden" onChange={handleFile} />
         </label>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Your Name *</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Your Name *</label>
           <input required type="text" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" placeholder="Jane Doe" />
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="Jane Doe" />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Email *</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Email *</label>
           <input required type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" placeholder="jane@example.com" />
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="jane@example.com" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Phone (optional)</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Phone (optional)</label>
           <input type="tel" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" placeholder="+1 555 000 0000" />
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" placeholder="+1 555 000 0000" />
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Quantity *</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Quantity *</label>
           <input required type="number" min={1} value={form.quantity} onChange={e => setForm(p => ({ ...p, quantity: parseInt(e.target.value) }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all" />
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Material</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Material</label>
           <select value={form.material} onChange={e => setForm(p => ({ ...p, material: e.target.value }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
             {MATERIALS.map(m => <option key={m}>{m}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-bold text-gray-200 mb-1.5">Color</label>
+          <label className="block text-sm font-bold text-stone-200 mb-1.5">Color</label>
           <select value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+            className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
             {COLORS.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-gray-200 mb-1.5">Notes / Special Requirements</label>
+        <label className="block text-sm font-bold text-stone-200 mb-1.5">Notes / Special Requirements</label>
         <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-          rows={4} className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all"
+          rows={4} className="w-full bg-stone-700 border border-stone-600 rounded-xl px-4 py-3 text-sm text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none transition-all"
           placeholder="Any special requirements, infill preferences, surface finish requests, intended use, etc." />
       </div>
 
@@ -117,11 +117,11 @@ export default function QuoteForm() {
       )}
 
       <button type="submit" disabled={status === 'submitting'}
-        className="w-full bg-gradient-to-r from-purple-500 to-purple-400 hover:from-purple-600 hover:to-purple-500 disabled:from-purple-400/50 disabled:to-purple-400/50 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25">
+        className="w-full bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 disabled:from-amber-700/50 disabled:to-amber-600/50 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-700/25">
         {status === 'submitting' ? <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</> : 'Request Quote'}
       </button>
 
-      <p className="text-center text-xs text-gray-500">We typically respond within 24 hours. For urgent requests, email appysstudioca@gmail.com</p>
+      <p className="text-center text-xs text-stone-500">We typically respond within 24 hours. For urgent requests, email appysstudioca@gmail.com</p>
     </form>
   );
 }
