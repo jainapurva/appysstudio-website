@@ -104,10 +104,9 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
 
         <div className="flex items-center justify-between pt-3 border-t border-stone-100">
           <div>
-            {product.hasNameInput && (
-              <span className="block text-[10px] uppercase tracking-wide text-stone-400 font-semibold">From</span>
-            )}
-            <span className="text-2xl font-extrabold text-stone-900">${product.price.toFixed(2)}</span>
+            <span className="text-2xl font-extrabold text-stone-900">
+              {product.hasNameInput ? '$8 – $10' : `$${product.price.toFixed(2)}`}
+            </span>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}

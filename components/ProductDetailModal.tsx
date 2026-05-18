@@ -244,9 +244,9 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
                 <div className="text-3xl font-extrabold text-stone-900 mb-4">
                   {product.hasNameInput ? (
                     <>
-                      {validNames.length > 0 ? `$${namesTotal.toFixed(2)}` : 'From $8.00'}
+                      {validNames.length > 0 ? `$${namesTotal.toFixed(2)}` : '$8 – $10'}
                       <span className="text-sm font-normal text-stone-400 ml-2">
-                        {validNames.length > 0 ? `${validNames.length} charm${validNames.length === 1 ? '' : 's'}` : 'enter a name'}
+                        {validNames.length > 0 ? `${validNames.length} charm${validNames.length === 1 ? '' : 's'}` : 'per charm'}
                       </span>
                     </>
                   ) : (
