@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, Clock, ChevronLeft, ChevronRight, Package, Ruler } from 'lucide-react';
-import { Product, FilamentColor } from '@/lib/products';
+import { X, ShoppingCart, Clock, ChevronLeft, ChevronRight, Package, Ruler, Tag, Plus, Minus } from 'lucide-react';
+import { Product, FilamentColor, BAG_CHARM_MAX_NAME_LENGTH, getBagCharmPrice } from '@/lib/products';
 import { useCart, CartItemCustomization } from '@/context/CartContext';
 import { trackEvent } from '@/lib/useAnalytics';
 
@@ -22,11 +22,12 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
   const [selectedVariant, setSelectedVariant] = useState<'without-divider' | 'with-divider'>('without-divider');
   const [customSizeEnabled, setCustomSizeEnabled] = useState(false);
   const [dimensions, setDimensions] = useState({ length: '', width: '', height: '' });
+  const [names, setNames] = useState<string[]>(['']);
 
   const images = product?.images?.length ? product.images : product ? [product.image] : [];
   // Deduplicate colors by name (keep first occurrence — brand is internal only)
   const uniqueColors = product?.colors?.filter((c, i, arr) => arr.findIndex(x => x.name === c.name) === i) ?? [];
-  const hasCustomizations = !!(product?.colors || product?.hasDividerOption || product?.hasCustomSize);
+  const hasCustomizations = !!(product?.colors || product?.hasDividerOption || product?.hasCustomSize || product?.hasNameInput);
 
   // Reset state when product changes
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
     setSelectedVariant('without-divider');
     setCustomSizeEnabled(false);
     setDimensions({ length: '', width: '', height: '' });
+    setNames(['']);
   }, [product?.id]);
 
   // Lock body scroll when modal is open
@@ -59,10 +61,32 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const canAddToCart = !product?.colors || selectedColor !== null;
+  const trimmedNames = names.map(n => n.trim());
+  const validNames = trimmedNames.filter(n => n.length > 0 && n.length <= BAG_CHARM_MAX_NAME_LENGTH);
+  const namesAllValid = product?.hasNameInput
+    ? trimmedNames.every(n => n.length >= 1 && n.length <= BAG_CHARM_MAX_NAME_LENGTH) && validNames.length === trimmedNames.length
+    : true;
+  const namesTotal = product?.hasNameInput
+    ? validNames.reduce((sum, n) => sum + getBagCharmPrice(n), 0)
+    : 0;
+
+  const canAddToCart =
+    (!product?.colors || selectedColor !== null) &&
+    (!product?.hasNameInput || (validNames.length > 0 && namesAllValid));
 
   const handleAddToCart = () => {
     if (!product || !canAddToCart) return;
+
+    if (product.hasNameInput) {
+      // One cart entry per name so each gets its own tier-based unit price.
+      validNames.forEach(name => {
+        addItem(product, { name });
+      });
+      trackEvent('add_to_cart', { productId: product.id, productName: product.name, price: namesTotal });
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+      return;
+    }
 
     let customizations: CartItemCustomization | undefined;
     if (hasCustomizations) {
@@ -83,6 +107,14 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
     trackEvent('add_to_cart', { productId: product.id, productName: product.name, price: product.price });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const updateName = (idx: number, value: string) => {
+    setNames(prev => prev.map((n, i) => (i === idx ? value : n)));
+  };
+  const addNameRow = () => setNames(prev => [...prev, '']);
+  const removeNameRow = (idx: number) => {
+    setNames(prev => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)));
   };
 
   const prevImage = () => setSelectedImageIndex(i => (i > 0 ? i - 1 : images.length - 1));
@@ -210,9 +242,20 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
 
                 {/* Price */}
                 <div className="text-3xl font-extrabold text-stone-900 mb-4">
-                  ${product.price.toFixed(2)}
-                  {product.hasCustomSize && (
-                    <span className="text-sm font-normal text-stone-400 ml-2">standard size</span>
+                  {product.hasNameInput ? (
+                    <>
+                      {validNames.length > 0 ? `$${namesTotal.toFixed(2)}` : 'From $8.00'}
+                      <span className="text-sm font-normal text-stone-400 ml-2">
+                        {validNames.length > 0 ? `${validNames.length} charm${validNames.length === 1 ? '' : 's'}` : 'enter a name'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      ${product.price.toFixed(2)}
+                      {product.hasCustomSize && (
+                        <span className="text-sm font-normal text-stone-400 ml-2">standard size</span>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -220,6 +263,67 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
                 <p className="text-stone-600 leading-relaxed mb-5">
                   {product.description}
                 </p>
+
+                {/* ── Name Inputs (Bag Charm) ── */}
+                {product.hasNameInput && (
+                  <div className="mb-5">
+                    <h3 className="text-sm font-semibold text-stone-900 mb-2 flex items-center gap-1.5">
+                      <Tag className="w-4 h-4 text-amber-700" />
+                      Names
+                      <span className="ml-1 font-normal text-stone-400 text-xs">
+                        (1–{BAG_CHARM_MAX_NAME_LENGTH} characters each)
+                      </span>
+                    </h3>
+                    <div className="space-y-2">
+                      {names.map((n, idx) => {
+                        const trimmed = n.trim();
+                        const tooLong = trimmed.length > BAG_CHARM_MAX_NAME_LENGTH;
+                        const price = trimmed.length > 0 && !tooLong ? getBagCharmPrice(trimmed) : null;
+                        return (
+                          <div key={idx} className="flex items-center gap-2">
+                            <div className="flex-1 relative">
+                              <input
+                                type="text"
+                                value={n}
+                                onChange={e => updateName(idx, e.target.value)}
+                                maxLength={BAG_CHARM_MAX_NAME_LENGTH}
+                                placeholder={`Name ${idx + 1}`}
+                                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent ${
+                                  tooLong ? 'border-red-300 bg-red-50' : 'border-stone-200'
+                                }`}
+                              />
+                              {price !== null && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-amber-700">
+                                  ${price}
+                                </span>
+                              )}
+                            </div>
+                            {names.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeNameRow(idx)}
+                                aria-label={`Remove name ${idx + 1}`}
+                                className="w-8 h-8 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-500"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addNameRow}
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 hover:text-amber-800"
+                    >
+                      <Plus className="w-4 h-4" /> Add another name
+                    </button>
+                    <p className="text-xs text-stone-500 mt-2 bg-amber-50 px-3 py-2 rounded-lg">
+                      $8 for names up to 5 letters · $10 for 6–9 letters · max {BAG_CHARM_MAX_NAME_LENGTH} characters per name
+                    </p>
+                  </div>
+                )}
 
                 {/* ── Color Picker ── */}
                 {uniqueColors.length > 0 && (

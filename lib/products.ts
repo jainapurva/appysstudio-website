@@ -19,6 +19,17 @@ export interface Product {
   colors?: FilamentColor[];
   hasDividerOption?: boolean;
   hasCustomSize?: boolean;
+  hasNameInput?: boolean;
+}
+
+// Bag Charm name-length pricing tiers.
+// 1-5 chars → $8, 6-9 chars → $10. Names longer than 9 chars are not allowed.
+export const BAG_CHARM_MAX_NAME_LENGTH = 9;
+
+export function getBagCharmPrice(name: string): number {
+  const len = name.trim().length;
+  if (len === 0 || len > BAG_CHARM_MAX_NAME_LENGTH) return 0;
+  return len <= 5 ? 8 : 10;
 }
 
 export const ORGANIZER_COLORS: FilamentColor[] = [
@@ -75,6 +86,30 @@ export const products: Product[] = [
     colors: ORGANIZER_COLORS,
     hasDividerOption: true,
     hasCustomSize: true,
+  },
+  {
+    id: 'named-bag-charm',
+    name: 'Named Bag Charm',
+    category: 'personalized',
+    price: 8,
+    description: 'A custom 3D-printed bag charm with the name of your choice. Clip it to a backpack, purse, or gym bag — perfect as a gift or to tell your bag apart from everyone else\'s. Order one or several at once, each with its own name.',
+    features: [
+      'Personalized with the name you choose',
+      'Up to 9 characters per name',
+      'Order multiple names in one go',
+      'Sturdy metal clip ring included',
+      '$8 for names up to 5 letters, $10 for 6–9 letters',
+    ],
+    image: '/products/bag-charm-1.jpg',
+    images: [
+      '/products/bag-charm-1.jpg',
+      '/products/bag-charm-2.jpg',
+      '/products/bag-charm-3.jpg',
+    ],
+    inStock: true,
+    leadTime: '4-6 days',
+    materials: ['PLA'],
+    hasNameInput: true,
   },
   {
     id: 'books-read-tracker',

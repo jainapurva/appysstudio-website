@@ -18,7 +18,13 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
     functional: 'bg-amber-600/10 text-amber-700 ring-1 ring-amber-600/20',
   };
 
+  const requiresModal = !!(product.colors || product.hasNameInput);
+
   const handleAddToCart = () => {
+    if (requiresModal) {
+      handleView();
+      return;
+    }
     addItem(product);
     trackEvent('add_to_cart', { productId: product.id, productName: product.name, price: product.price });
   };
@@ -98,6 +104,9 @@ export default function ProductCard({ product, onSelect }: { product: Product; o
 
         <div className="flex items-center justify-between pt-3 border-t border-stone-100">
           <div>
+            {product.hasNameInput && (
+              <span className="block text-[10px] uppercase tracking-wide text-stone-400 font-semibold">From</span>
+            )}
             <span className="text-2xl font-extrabold text-stone-900">${product.price.toFixed(2)}</span>
           </div>
           <button

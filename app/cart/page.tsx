@@ -1,5 +1,5 @@
 'use client';
-import { useCart, CartItem } from '@/context/CartContext';
+import { useCart, CartItem, getItemUnitPrice } from '@/context/CartContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Truck, Trash2, Plus, Minus, ShoppingBag, CreditCard, Lock, ArrowLeft } from 'lucide-react';
@@ -15,6 +15,9 @@ interface ShippingRate {
 
 function buildItemName(item: CartItem): string {
   const parts = [item.product.name];
+  if (item.customizations?.name) {
+    parts.push(`"${item.customizations.name}"`);
+  }
   if (item.customizations?.color) {
     parts.push(item.customizations.color.name);
   }
@@ -90,7 +93,7 @@ export default function CartPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items.map(i => ({ productName: buildItemName(i), price: i.product.price, quantity: i.quantity })),
+          items: items.map(i => ({ productName: buildItemName(i), price: getItemUnitPrice(i), quantity: i.quantity })),
           customerEmail: email,
           customerName: name,
           couponCode: coupon || undefined,
@@ -158,6 +161,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => {
               const { product, quantity, customizations, cartKey } = item;
+              const unitPrice = getItemUnitPrice(item);
               return (
                 <div key={cartKey} className="bg-white rounded-2xl p-5 flex gap-4 shadow-sm border border-gray-100">
                   <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 relative bg-gray-100">
@@ -165,6 +169,9 @@ export default function CartPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 truncate">{product.name}</h3>
+                    {customizations?.name && (
+                      <p className="text-xs text-amber-700 font-semibold mt-0.5 truncate">Name: &ldquo;{customizations.name}&rdquo;</p>
+                    )}
                     {/* Customization details */}
                     {customizations?.color && (
                       <div className="flex items-center gap-1.5 mt-0.5">
@@ -196,8 +203,8 @@ export default function CartPage() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-extrabold text-lg text-gray-900">${(product.price * quantity).toFixed(2)}</p>
-                    <p className="text-xs text-gray-400">${product.price.toFixed(2)} each</p>
+                    <p className="font-extrabold text-lg text-gray-900">${(unitPrice * quantity).toFixed(2)}</p>
+                    <p className="text-xs text-gray-400">${unitPrice.toFixed(2)} each</p>
                   </div>
                 </div>
               );

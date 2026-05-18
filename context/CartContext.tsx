@@ -1,11 +1,12 @@
 'use client';
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Product, FilamentColor } from '@/lib/products';
+import { Product, FilamentColor, getBagCharmPrice } from '@/lib/products';
 
 export interface CartItemCustomization {
   color?: FilamentColor;
   variant?: 'with-divider' | 'without-divider';
   customDimensions?: { length: number; width: number; height: number };
+  name?: string;
 }
 
 export interface CartItem {
@@ -24,7 +25,15 @@ function makeCartKey(productId: string, customizations?: CartItemCustomization):
     const d = customizations.customDimensions;
     parts.push(`${d.length}x${d.width}x${d.height}`);
   }
+  if (customizations.name) parts.push(`name:${customizations.name.toLowerCase()}`);
   return parts.join('|');
+}
+
+export function getItemUnitPrice(item: CartItem): number {
+  if (item.product.hasNameInput && item.customizations?.name) {
+    return getBagCharmPrice(item.customizations.name);
+  }
+  return item.product.price;
 }
 
 interface CartContextType {
@@ -65,7 +74,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = useCallback(() => setItems([]), []);
 
-  const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + getItemUnitPrice(i) * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
