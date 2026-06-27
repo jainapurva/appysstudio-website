@@ -23,8 +23,8 @@ export interface Product {
 }
 
 // Bag Charm name-length pricing tiers.
-// 1-5 chars → $8, 6-9 chars → $10. Names longer than 9 chars are not allowed.
-export const BAG_CHARM_MAX_NAME_LENGTH = 9;
+// 1-5 chars → $8, 6-8 chars → $10. Names longer than 8 chars are not allowed.
+export const BAG_CHARM_MAX_NAME_LENGTH = 8;
 
 export function getBagCharmPrice(name: string): number {
   const len = name.trim().length;
@@ -95,10 +95,10 @@ export const products: Product[] = [
     description: 'A custom 3D-printed bag charm with the name of your choice. Clip it to a backpack, purse, or gym bag — perfect as a gift or to tell your bag apart from everyone else\'s. Order one or several at once, each with its own name.',
     features: [
       'Personalized with the name you choose',
-      'Up to 9 characters per name',
+      'Up to 8 characters per name',
       'Order multiple names in one go',
       'Sturdy metal clip ring included',
-      '$8 for names up to 5 letters, $10 for 6–9 letters',
+      '$8 for names up to 5 letters, $10 for 6–8 letters',
     ],
     image: '/products/bag-charm-1.jpg',
     inStock: true,

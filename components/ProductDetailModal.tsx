@@ -320,7 +320,7 @@ export default function ProductDetailModal({ product, onClose }: ProductDetailMo
                       <Plus className="w-4 h-4" /> Add another name
                     </button>
                     <p className="text-xs text-stone-500 mt-2 bg-amber-50 px-3 py-2 rounded-lg">
-                      $8 for names up to 5 letters · $10 for 6–9 letters · max {BAG_CHARM_MAX_NAME_LENGTH} characters per name
+                      $8 for names up to 5 letters · $10 for 6–{BAG_CHARM_MAX_NAME_LENGTH} letters · max {BAG_CHARM_MAX_NAME_LENGTH} characters per name
                     </p>
                   </div>
                 )}
