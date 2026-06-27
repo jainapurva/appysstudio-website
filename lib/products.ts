@@ -101,11 +101,6 @@ export const products: Product[] = [
       '$8 for names up to 5 letters, $10 for 6–9 letters',
     ],
     image: '/products/bag-charm-1.jpg',
-    images: [
-      '/products/bag-charm-1.jpg',
-      '/products/bag-charm-2.jpg',
-      '/products/bag-charm-3.jpg',
-    ],
     inStock: true,
     leadTime: '4-6 days',
     materials: ['PLA'],
