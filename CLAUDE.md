@@ -188,7 +188,39 @@ Builder features: shape selector (circle/rectangle/rounded), size selector (S/M/
 - `buildItemName(item)` in cart page builds descriptive name for Square checkout (e.g. "Box — White (Elegoo) — With Divider — 6"×4"×3"")
 - Custom size shows amber warning: "may vary in price — we'll confirm before processing"
 
+## Workshop Page (`/workshop`)
+Landing + paid registration for the Aug 22, 2026 3D printing workshop.
+- **Single source of truth:** `lib/workshop.ts` — date, price, capacity, venue,
+  agenda, takeaways, requirements, FAQ. Change the workshop details there and the
+  page, emails, and structured data all follow. No copy is hard-coded in the page.
+- **Details:** Sat Aug 22 2026, 2–6 PM, 5804 Biddle Ave, Newark CA 94560.
+  $30/person, 10 seats, ages 12+, laptop required (one per attendee).
+- **Seats:** `lib/workshop-registrations.ts` counts seats from
+  `data/orders.json` → `registrations[]`. Only `status: 'confirmed'` holds a
+  seat, so abandoned checkouts don't block sales. `GET /api/workshop/seats`
+  returns remaining; form shows "N left" at ≤5 and a sold-out card at 0.
+- **Flow:** form → `POST /api/workshop/register` (validates, caps seats, saves
+  `pending_payment`, creates Square link) → sessionStorage `workshopSquareOrderId`
+  → Square hosted checkout → `/workshop/success` → `POST /api/workshop/verify`
+  (confirms tenders, flips to `confirmed`, sends emails). Same verify-on-redirect
+  pattern as products, since Payment Links don't fire reliable webhooks.
+- **No shipping address** is requested (`askForShippingAddress: false`) — a seat
+  isn't shipped.
+- **Do NOT send `buyerPhoneNumber` to Square.** Square hard-rejects the entire
+  checkout with `INVALID_PHONE_NUMBER` on anything its validator dislikes
+  (including any 555 number), which would fail a sale on an *optional* field.
+  The raw phone is stored on the registration for follow-up instead.
+- Square rejects `@example.com` buyer emails too — use a real domain when testing.
+- Emails: `sendWorkshopConfirmationToCustomer`, `sendWorkshopRegistrationToOwner`,
+  `sendWorkshopRegistrationPendingToOwner` (used when Square isn't configured —
+  registration is saved and flagged for manual payment rather than failing).
+
 ## Recent Changes (newest first)
+- 2026-07-15: **Workshop page + paid registration** at `/workshop` (see above).
+  New `lib/workshop.ts` config, `WorkshopRegistration` form, Square checkout via
+  `/api/workshop/{register,verify,seats}`, `registrations[]` added to
+  `data/orders.json` (back-filled by `getDB()`), nav + sitemap entries,
+  `EducationEvent` JSON-LD for search results.
 - 2026-04-18: **Repo migration + CI deploy + service rename**
   - Shop code migrated from `jainapurva/printcraft-shop` (now archived) into
     this repo. Static HTML site preserved on `archive/static-site` branch.

@@ -8,6 +8,7 @@ import { useState } from 'react';
 const NAV_LINKS = [
   { label: 'Shop', href: '/#shop' },
   { label: '✨ AI 3D Generator', href: '/3d-generator', badge: 'New' },
+  { label: 'Workshop', href: '/workshop', badge: 'Aug 22' },
   { label: 'Custom Print', href: '/#custom' },
   { label: 'Robotics', href: '/robotics', badge: 'Soon' },
   { label: 'Support', href: '/#faq' },

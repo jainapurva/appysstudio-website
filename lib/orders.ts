@@ -31,15 +31,38 @@ export interface QuoteRequest {
   createdAt: string;
 }
 
+export interface WorkshopRegistration {
+  id: string;
+  workshopId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  seats: number;
+  attendeeNames?: string;
+  experience?: string;
+  notes?: string;
+  amountPaid: number;
+  squarePaymentId?: string;
+  status: 'pending_payment' | 'confirmed' | 'cancelled';
+  createdAt: string;
+}
+
 function ensureDB() {
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(DB_PATH)) fs.writeFileSync(DB_PATH, JSON.stringify({ orders: [], quotes: [] }));
+  if (!fs.existsSync(DB_PATH)) {
+    fs.writeFileSync(DB_PATH, JSON.stringify({ orders: [], quotes: [], registrations: [] }));
+  }
 }
 
 export function getDB() {
   ensureDB();
-  return JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
+  const db = JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
+  // Backfill collections added after the DB file was first written.
+  db.orders ??= [];
+  db.quotes ??= [];
+  db.registrations ??= [];
+  return db;
 }
 
 export function saveDB(data: unknown) {

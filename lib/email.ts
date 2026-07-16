@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { WORKSHOP, VENUE_ONE_LINE } from './workshop';
 
 const emailEnabled = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
 
@@ -132,6 +133,145 @@ export async function sendNewOrderNotificationToOwner(order: {
           <pre style="background:#f9fafb;padding:16px;border-radius:8px;font-size:13px;line-height:1.8;margin:0">${itemsList}</pre>
 
           ${order.shippingAddress ? `<p style="margin-top:20px;font-size:14px"><strong>Ship to:</strong> ${order.shippingAddress}</p>` : ''}
+        </div>
+      </div>
+    `,
+  });
+}
+
+interface WorkshopRegistrationEmail {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  seats: number;
+  attendeeNames?: string;
+  experience?: string;
+  notes?: string;
+  amountPaid: number;
+}
+
+export async function sendWorkshopConfirmationToCustomer(reg: WorkshopRegistrationEmail) {
+  const seatLabel = `${reg.seats} seat${reg.seats === 1 ? '' : 's'}`;
+
+  await safeSendMail({
+    from: `Appy's Studio <${FROM_EMAIL}>`,
+    to: reg.customerEmail,
+    subject: `You're registered — ${WORKSHOP.title}, ${WORKSHOP.date}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+        <div style="background:#7c3aed;padding:32px;text-align:center;border-radius:12px 12px 0 0">
+          <h1 style="color:white;margin:0;font-size:24px">🎉 You're registered!</h1>
+          <p style="color:#ddd6fe;margin:8px 0 0;font-size:15px">${WORKSHOP.title}</p>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+          <p style="margin-top:0">Hi <strong>${reg.customerName}</strong>,</p>
+          <p>Your spot is confirmed. Here are the details — we'd suggest adding them to your calendar now.</p>
+
+          <table style="width:100%;border-collapse:collapse;background:#f9fafb;border-radius:8px;margin:20px 0">
+            ${[
+              ['When', `${WORKSHOP.date}<br>${WORKSHOP.startTime} – ${WORKSHOP.endTime} (${WORKSHOP.durationHours} hours)`],
+              ['Where', `${WORKSHOP.venue.name}<br>${VENUE_ONE_LINE}`],
+              ['Seats', seatLabel],
+              ['Paid', `$${reg.amountPaid.toFixed(2)}`],
+              ['Reference', `<code style="font-family:monospace">${reg.id}</code>`],
+            ].map(([label, value]) => `
+              <tr>
+                <td style="padding:12px 16px;color:#6b7280;font-size:13px;width:90px;vertical-align:top">${label}</td>
+                <td style="padding:12px 16px;font-weight:500;font-size:14px">${value}</td>
+              </tr>
+            `).join('')}
+          </table>
+
+          <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;margin:24px 0;border-radius:0 8px 8px 0">
+            <p style="margin:0 0 8px;font-size:14px"><strong>⚠️ Please bring a laptop</strong></p>
+            <p style="margin:0;font-size:14px;line-height:1.6">This is a hands-on session and you'll be designing on your own machine, so you can keep everything you make. Any Mac, Windows laptop, or Chromebook that runs a modern browser is fine.${reg.seats > 1 ? ` You've booked ${seatLabel} — <strong>each attendee needs their own laptop.</strong>` : ''}</p>
+          </div>
+
+          <p style="font-size:14px;line-height:1.7"><strong>Everything else is on us.</strong> Printers, filament, software, and materials are all provided. No experience needed — come as you are.</p>
+
+          <p style="font-size:14px;line-height:1.7">You'll leave with a 3D printed object that you designed during the session.</p>
+
+          <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:24px 0">
+            <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6">
+              <strong style="color:#374151">Need to cancel?</strong> Email us at least 7 days before the workshop for a full refund. Inside 7 days we can't refund, but you're welcome to send someone else in your place.
+            </p>
+          </div>
+
+          <p style="font-size:14px;color:#6b7280">Questions? Just reply to this email, or reach us at <a href="mailto:${OWNER_EMAIL}" style="color:#7c3aed">${OWNER_EMAIL}</a></p>
+          <p style="font-size:14px;color:#6b7280;margin-bottom:0">See you on the 22nd!<br>— The Appy's Studio Team</p>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendWorkshopRegistrationToOwner(reg: WorkshopRegistrationEmail) {
+  await safeSendMail({
+    from: `Appy's Studio <${FROM_EMAIL}>`,
+    to: OWNER_EMAIL,
+    subject: `🎓 Workshop registration: ${reg.customerName} — ${reg.seats} seat${reg.seats === 1 ? '' : 's'} ($${reg.amountPaid.toFixed(2)})`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+        <div style="background:#1f2937;padding:24px 32px;border-radius:12px 12px 0 0">
+          <h2 style="color:white;margin:0;font-size:20px">New Workshop Registration 🎓</h2>
+          <p style="color:#9ca3af;margin:4px 0 0;font-size:14px">${reg.id} · ${WORKSHOP.date}</p>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+          <table style="width:100%;border-collapse:collapse">
+            ${[
+              ['Name', reg.customerName],
+              ['Email', reg.customerEmail],
+              ['Phone', reg.customerPhone || '—'],
+              ['Seats', String(reg.seats)],
+              ['Paid', `$${reg.amountPaid.toFixed(2)}`],
+              ['Attendees', reg.attendeeNames || '—'],
+              ['Experience', reg.experience || '—'],
+            ].map(([label, value]) => `
+              <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:100px">${label}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:500">${value}</td>
+              </tr>
+            `).join('')}
+          </table>
+          ${reg.notes ? `
+          <div style="margin-top:20px">
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">Notes</p>
+            <p style="background:#f9fafb;padding:14px;border-radius:8px;margin:0;font-size:14px;line-height:1.6">${reg.notes}</p>
+          </div>` : ''}
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendWorkshopRegistrationPendingToOwner(reg: WorkshopRegistrationEmail) {
+  await safeSendMail({
+    from: `Appy's Studio <${FROM_EMAIL}>`,
+    to: OWNER_EMAIL,
+    subject: `⏳ Workshop registration awaiting payment: ${reg.customerName} (${reg.seats} seat${reg.seats === 1 ? '' : 's'})`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+        <div style="background:#b45309;padding:24px 32px;border-radius:12px 12px 0 0">
+          <h2 style="color:white;margin:0;font-size:20px">Workshop Registration — Payment Pending</h2>
+          <p style="color:#fde68a;margin:4px 0 0;font-size:14px">${reg.id}</p>
+        </div>
+        <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px">
+          <p style="margin-top:0;font-size:14px">Square isn't configured, so this registration was saved without payment. Follow up with the customer directly to collect $${reg.amountPaid.toFixed(2)}.</p>
+          <table style="width:100%;border-collapse:collapse">
+            ${[
+              ['Name', reg.customerName],
+              ['Email', reg.customerEmail],
+              ['Phone', reg.customerPhone || '—'],
+              ['Seats', String(reg.seats)],
+              ['Owed', `$${reg.amountPaid.toFixed(2)}`],
+            ].map(([label, value]) => `
+              <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:13px;width:100px">${label}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;font-weight:500">${value}</td>
+              </tr>
+            `).join('')}
+          </table>
         </div>
       </div>
     `,
