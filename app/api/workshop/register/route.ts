@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
           {
             name: `${WORKSHOP.title} — ${WORKSHOP.date}`,
             quantity: String(seats),
-            note: `${WORKSHOP.startTime}–${WORKSHOP.endTime} · ${WORKSHOP.venue.address}, ${WORKSHOP.venue.city}`,
+            note: `${WORKSHOP.startTime}–${WORKSHOP.endTime} · ${WORKSHOP.venue.city}, ${WORKSHOP.venue.state}`,
             basePriceMoney: {
               amount: BigInt(Math.round(WORKSHOP.pricePerSeat * 100)),
               currency: 'USD',

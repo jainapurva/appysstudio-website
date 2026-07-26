@@ -35,10 +35,8 @@ const eventJsonLd = {
     name: WORKSHOP.venue.name,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: WORKSHOP.venue.address,
       addressLocality: WORKSHOP.venue.city,
       addressRegion: WORKSHOP.venue.state,
-      postalCode: WORKSHOP.venue.zip,
       addressCountry: 'US',
     },
   },
@@ -101,7 +99,7 @@ export default function WorkshopPage() {
             {[
               { icon: Calendar, label: WORKSHOP.date.replace(', 2026', ''), sub: '2026' },
               { icon: Clock, label: `${WORKSHOP.startTime} – ${WORKSHOP.endTime}`, sub: `${WORKSHOP.durationHours} hours` },
-              { icon: MapPin, label: `${WORKSHOP.venue.city}, ${WORKSHOP.venue.state}`, sub: WORKSHOP.venue.address },
+              { icon: MapPin, label: `${WORKSHOP.venue.city}, ${WORKSHOP.venue.state}`, sub: 'In person' },
               { icon: Users, label: `$${WORKSHOP.pricePerSeat} per person`, sub: `Ages ${WORKSHOP.minAge}+` },
             ].map(fact => (
               <div key={fact.label} className="bg-white rounded-xl p-4 border border-stone-200">

@@ -193,7 +193,7 @@ Landing + paid registration for the Aug 22, 2026 3D printing workshop.
 - **Single source of truth:** `lib/workshop.ts` — date, price, capacity, venue,
   agenda, takeaways, requirements, FAQ. Change the workshop details there and the
   page, emails, and structured data all follow. No copy is hard-coded in the page.
-- **Details:** Sat Aug 22 2026, 2–6 PM, 5804 Biddle Ave, Newark CA 94560.
+- **Details:** Sat Aug 22 2026, 2–6 PM, Newark, CA (street address intentionally not published).
   $30/person, 10 seats, ages 12+, laptop required (one per attendee).
 - **Seats:** `lib/workshop-registrations.ts` counts seats from
   `data/orders.json` → `registrations[]`. Only `status: 'confirmed'` holds a

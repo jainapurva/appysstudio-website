@@ -13,14 +13,12 @@ export const WORKSHOP = {
   minAge: 12,
   venue: {
     name: "Appy's Studio",
-    address: '5804 Biddle Ave',
     city: 'Newark',
     state: 'CA',
-    zip: '94560',
   },
 } as const;
 
-export const VENUE_ONE_LINE = `${WORKSHOP.venue.address}, ${WORKSHOP.venue.city}, ${WORKSHOP.venue.state} ${WORKSHOP.venue.zip}`;
+export const VENUE_ONE_LINE = `${WORKSHOP.venue.city}, ${WORKSHOP.venue.state}`;
 
 export const VENUE_MAP_URL = `https://maps.google.com/?q=${encodeURIComponent(VENUE_ONE_LINE)}`;
 
