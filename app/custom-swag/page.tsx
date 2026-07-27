@@ -69,8 +69,8 @@ function MagnetPreview({ imageUrl, shape, size }: { imageUrl: string | null; sha
           )}
         </div>
       </div>
-      <p className="text-sm text-gray-500 mt-5 font-medium">{size.label} Fridge Magnet</p>
-      <p className="text-xs text-gray-400 mt-1">Strong embedded magnet backing</p>
+      <p className="text-sm text-ink2 mt-5 font-medium">{size.label} Fridge Magnet</p>
+      <p className="text-xs text-ink2/70 mt-1">Strong embedded magnet backing</p>
     </div>
   );
 }
@@ -102,8 +102,8 @@ function KeychainPreview({ imageUrl, shape, size }: { imageUrl: string | null; s
           )}
         </div>
       </div>
-      <p className="text-sm text-gray-500 mt-5 font-medium">{size.label} Keychain</p>
-      <p className="text-xs text-gray-400 mt-1">Metal ring attachment included</p>
+      <p className="text-sm text-ink2 mt-5 font-medium">{size.label} Keychain</p>
+      <p className="text-xs text-ink2/70 mt-1">Metal ring attachment included</p>
     </div>
   );
 }
@@ -142,8 +142,8 @@ function NfcBadgePreview({ imageUrl, shape, size }: { imageUrl: string | null; s
           <span className="text-[9px] text-white font-bold">NFC</span>
         </div>
       </div>
-      <p className="text-sm text-gray-500 mt-5 font-medium">{size.label} NFC Badge</p>
-      <p className="text-xs text-gray-400 mt-1">Tap with any phone to open your link</p>
+      <p className="text-sm text-ink2 mt-5 font-medium">{size.label} NFC Badge</p>
+      <p className="text-xs text-ink2/70 mt-1">Tap with any phone to open your link</p>
     </div>
   );
 }
@@ -181,32 +181,32 @@ function CustomQuoteForm() {
   if (submitted) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <Check className="w-8 h-8 text-emerald-500" />
+        <div className="w-16 h-16 bg-butter/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <span className="text-[28px] text-craft-orange craft-spin !animate-[craft-spin_8s_linear_infinite]">✳︎</span>
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Request Submitted!</h3>
-        <p className="text-gray-500 text-sm">We&apos;ll review your request and get back to you within 24 hours with a quote.</p>
+        <h3 className="font-display text-[24px] text-ink mb-2">Request submitted!</h3>
+        <p className="text-ink2 text-sm">We&apos;ll review your request and get back to you within 24 hours with a quote.</p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-gray-500 text-sm mb-4">Describe what you want and we&apos;ll get back to you with a quote within 24 hours.</p>
+      <p className="text-ink2 text-sm mb-4">Describe what you want and we&apos;ll get back to you with a quote within 24 hours.</p>
       <input required type="text" placeholder="Your Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent" />
+        className="craft-input text-sm" />
       <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent" />
+        className="craft-input text-sm" />
       <textarea required placeholder="Describe your custom swag — shape, size, material, quantity, design ideas..." value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={4}
-        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none" />
+        className="craft-input text-sm resize-none" />
       <div>
-        <button type="button" onClick={() => fileRef.current?.click()} className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1.5">
+        <button type="button" onClick={() => fileRef.current?.click()} className="text-sm text-clay hover:text-clay-dark font-bold flex items-center gap-1.5">
           <Upload className="w-4 h-4" /> {file ? file.name : 'Attach reference image (optional)'}
         </button>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) setFile(f); }} />
       </div>
       <button type="submit" disabled={submitting}
-        className="w-full bg-gradient-to-r from-purple-500 to-purple-400 hover:from-purple-600 hover:to-purple-500 disabled:from-purple-300 disabled:to-purple-200 text-white py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25">
+        className="btn-clay w-full">
         {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Send className="w-4 h-4" /> Submit Request</>}
       </button>
     </form>
@@ -283,21 +283,21 @@ export default function CustomSwagPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-        <Link href="/#shop" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm font-medium mb-6 transition-colors">
+        <Link href="/#shop" className="inline-flex items-center gap-2 text-ink2 hover:text-clay-dark text-sm font-medium mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to shop
         </Link>
 
         <div className="text-center mb-12">
-          <p className="text-purple-500 font-semibold text-sm uppercase tracking-wider mb-2">Design Your Own</p>
-          <h1 className="text-4xl font-extrabold text-gray-900">Custom Swag</h1>
-          <p className="text-gray-500 mt-2 max-w-lg mx-auto">Upload your image, pick a style, and preview your custom swag before ordering.</p>
+          <p className="kicker justify-center mb-2">Design your own</p>
+          <h1 className="font-display text-[clamp(34px,4vw,48px)] text-ink">Custom Swag</h1>
+          <p className="text-ink2 mt-2 max-w-lg mx-auto">Upload your image, pick a style, and preview your custom swag before ordering.</p>
         </div>
 
         {/* Step 1: Swag Type — always visible */}
         <div className="mb-10">
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">1. Choose Type</h2>
+          <h2 className="text-[12.5px] font-bold text-ink uppercase tracking-[.12em] mb-3">1. Choose Type</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {SWAG_TYPES.map(type => (
               <button
@@ -305,14 +305,14 @@ export default function CustomSwagPage() {
                 onClick={() => { setSwagType(type.id); setAdded(false); }}
                 className={`p-4 rounded-2xl border-2 text-center transition-all ${
                   swagType === type.id
-                    ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-500/10'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-clay bg-butter/30 shadow-md shadow-clay/10 -rotate-1'
+                    : 'border-transparent bg-white shadow-[0_2px_0_rgba(61,47,36,.1)] hover:border-clay/40'
                 }`}
               >
-                <type.icon className={`w-6 h-6 mx-auto mb-2 ${swagType === type.id ? 'text-purple-500' : 'text-gray-400'}`} />
-                <p className={`text-sm font-bold ${swagType === type.id ? 'text-purple-700' : 'text-gray-700'}`}>{type.name}</p>
-                <p className="text-[11px] text-gray-400 mt-1">{type.description}</p>
-                {type.id !== 'custom' && <p className="text-xs font-bold text-purple-500 mt-1">${SWAG_PRICE.toFixed(2)}</p>}
+                <type.icon className={`w-6 h-6 mx-auto mb-2 ${swagType === type.id ? 'text-clay' : 'text-ink2/60'}`} />
+                <p className={`text-sm font-bold ${swagType === type.id ? 'text-clay-dark' : 'text-ink'}`}>{type.name}</p>
+                <p className="text-[11px] text-ink2/70 mt-1">{type.description}</p>
+                {type.id !== 'custom' && <p className="text-xs font-bold text-clay mt-1">${SWAG_PRICE.toFixed(2)}</p>}
               </button>
             ))}
           </div>
@@ -320,8 +320,8 @@ export default function CustomSwagPage() {
 
         {/* Custom quote form */}
         {isCustom && (
-          <div className="max-w-lg mx-auto bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Custom Swag Request</h2>
+          <div className="max-w-lg mx-auto bg-white rounded-3xl p-8 shadow-[0_3px_0_rgba(61,47,36,.12),0_10px_24px_rgba(61,47,36,.08)]">
+            <h2 className="font-display text-[22px] text-ink mb-4">Custom swag request</h2>
             <CustomQuoteForm />
           </div>
         )}
@@ -333,18 +333,18 @@ export default function CustomSwagPage() {
             <div className="space-y-8">
               {/* Upload Image */}
               <div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">2. Upload Image</h2>
+                <h2 className="text-[12.5px] font-bold text-ink uppercase tracking-[.12em] mb-3">2. Upload Image</h2>
                 {imageUrl ? (
-                  <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                  <div className="bg-white rounded-2xl shadow-[0_2px_0_rgba(61,47,36,.1)] p-4 flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-paper2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imageUrl} alt="Uploaded" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{imageFile?.name}</p>
-                      <p className="text-xs text-gray-400">{imageFile ? (imageFile.size / 1024).toFixed(1) + ' KB' : ''}</p>
+                      <p className="text-sm font-semibold text-ink truncate">{imageFile?.name}</p>
+                      <p className="text-xs text-ink2/70">{imageFile ? (imageFile.size / 1024).toFixed(1) + ' KB' : ''}</p>
                     </div>
-                    <button onClick={removeImage} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><X className="w-5 h-5" /></button>
+                    <button onClick={removeImage} className="p-2 text-ink2/70 hover:text-[#b3402a] transition-colors"><X className="w-5 h-5" /></button>
                   </div>
                 ) : (
                   <div
@@ -353,12 +353,12 @@ export default function CustomSwagPage() {
                     onDrop={handleDrop}
                     onClick={() => fileInputRef.current?.click()}
                     className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                      dragOver ? 'border-purple-500 bg-purple-50' : 'border-gray-300 bg-white hover:border-purple-400 hover:bg-purple-50/50'
+                      dragOver ? 'border-clay bg-butter/30' : 'border-clay/50 bg-white hover:border-clay hover:bg-butter/20'
                     }`}
                   >
-                    <Upload className={`w-8 h-8 mx-auto mb-3 ${dragOver ? 'text-purple-500' : 'text-gray-400'}`} />
-                    <p className="text-sm font-semibold text-gray-700">Drag & drop or click to upload</p>
-                    <p className="text-xs text-gray-400 mt-1">PNG, JPG, or SVG</p>
+                    <Upload className={`w-8 h-8 mx-auto mb-3 ${dragOver ? 'text-clay' : 'text-ink2/60'}`} />
+                    <p className="text-sm font-semibold text-ink">Drag & drop or click to upload</p>
+                    <p className="text-xs text-ink2/70 mt-1">PNG, JPG, or SVG</p>
                   </div>
                 )}
                 <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.svg" className="hidden"
@@ -367,17 +367,17 @@ export default function CustomSwagPage() {
 
               {/* Shape */}
               <div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">3. Shape</h2>
+                <h2 className="text-[12.5px] font-bold text-ink uppercase tracking-[.12em] mb-3">3. Shape</h2>
                 <div className="flex gap-3">
                   {SHAPES.map(s => (
                     <button key={s.id} onClick={() => setShape(s.id)}
                       className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
-                        shape === s.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                        shape === s.id ? 'border-clay bg-butter/30' : 'border-transparent bg-white shadow-[0_2px_0_rgba(61,47,36,.1)] hover:border-clay/40'
                       }`}>
-                      <div className="mx-auto mb-2 w-8 h-8 bg-gray-300" style={{
+                      <div className="mx-auto mb-2 w-8 h-8 bg-paper2 border-2 border-ink/30" style={{
                         borderRadius: s.id === 'circle' ? '50%' : s.id === 'rounded-rect' ? '6px' : '0',
                       }} />
-                      <p className={`text-xs font-bold ${shape === s.id ? 'text-purple-700' : 'text-gray-600'}`}>{s.name}</p>
+                      <p className={`text-xs font-bold ${shape === s.id ? 'text-clay-dark' : 'text-ink2'}`}>{s.name}</p>
                     </button>
                   ))}
                 </div>
@@ -385,15 +385,15 @@ export default function CustomSwagPage() {
 
               {/* Size */}
               <div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">4. Size</h2>
+                <h2 className="text-[12.5px] font-bold text-ink uppercase tracking-[.12em] mb-3">4. Size</h2>
                 <div className="flex gap-3">
                   {SIZES.map(s => (
                     <button key={s.id} onClick={() => setSize(s.id)}
                       className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
-                        size === s.id ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                        size === s.id ? 'border-clay bg-butter/30' : 'border-transparent bg-white shadow-[0_2px_0_rgba(61,47,36,.1)] hover:border-clay/40'
                       }`}>
-                      <p className={`text-lg font-extrabold ${size === s.id ? 'text-purple-700' : 'text-gray-700'}`}>{s.label}</p>
-                      <p className={`text-xs ${size === s.id ? 'text-purple-500' : 'text-gray-400'}`}>{s.name}</p>
+                      <p className={`font-display text-lg ${size === s.id ? 'text-clay-dark' : 'text-ink'}`}>{s.label}</p>
+                      <p className={`text-xs ${size === s.id ? 'text-clay' : 'text-ink2/70'}`}>{s.name}</p>
                     </button>
                   ))}
                 </div>
@@ -401,40 +401,40 @@ export default function CustomSwagPage() {
 
               {/* Add to Cart */}
               <button onClick={handleAddToCart} disabled={!canAddToCart || added}
-                className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-lg ${
-                  added ? 'bg-emerald-500 text-white shadow-emerald-500/25'
-                    : canAddToCart ? 'bg-gradient-to-r from-purple-500 to-purple-400 hover:from-purple-600 hover:to-purple-500 text-white shadow-purple-500/25'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                className={`w-full py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+                  added ? 'bg-sage text-white shadow-[0_6px_0_var(--color-sage-dark)]'
+                    : canAddToCart ? 'bg-clay text-white shadow-[0_6px_0_var(--color-clay-dark)] hover:-translate-y-0.5'
+                    : 'bg-paper2 text-ink2/50 cursor-not-allowed shadow-none'
                 }`}>
-                {added ? <><Check className="w-5 h-5" /> Added to Cart!</> : <><ShoppingCart className="w-5 h-5" /> Add to Cart — ${SWAG_PRICE.toFixed(2)}</>}
+                {added ? <><Check className="w-5 h-5" /> Added to your basket!</> : <><ShoppingCart className="w-5 h-5" /> Add to basket — ${SWAG_PRICE.toFixed(2)}</>}
               </button>
             </div>
 
             {/* Right: Live Preview */}
             <div className="lg:sticky lg:top-24 h-fit">
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Preview</h2>
-              <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
+              <h2 className="text-[12.5px] font-bold text-ink uppercase tracking-[.12em] mb-3">Preview</h2>
+              <div className="bg-white rounded-3xl p-8 shadow-[0_3px_0_rgba(61,47,36,.12),0_10px_24px_rgba(61,47,36,.08)]">
                 <div className="flex items-center justify-center" style={{ minHeight: '300px' }}>
                   {renderPreview()}
                 </div>
 
                 {selectedType && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
+                  <div className="mt-6 pt-6 border-t border-dashed border-ink/25">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Type</span>
-                      <span className="font-semibold text-gray-900">{selectedType.name}</span>
+                      <span className="text-ink2">Type</span>
+                      <span className="font-semibold text-ink">{selectedType.name}</span>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
-                      <span className="text-gray-500">Size</span>
-                      <span className="font-semibold text-gray-900">{selectedSize.label} ({selectedSize.name})</span>
+                      <span className="text-ink2">Size</span>
+                      <span className="font-semibold text-ink">{selectedSize.label} ({selectedSize.name})</span>
                     </div>
                     <div className="flex justify-between text-sm mt-2">
-                      <span className="text-gray-500">Shape</span>
-                      <span className="font-semibold text-gray-900">{selectedShape.name}</span>
+                      <span className="text-ink2">Shape</span>
+                      <span className="font-semibold text-ink">{selectedShape.name}</span>
                     </div>
-                    <div className="flex justify-between text-sm mt-2 pt-2 border-t border-gray-100">
-                      <span className="text-gray-500">Price</span>
-                      <span className="font-extrabold text-lg text-gray-900">${SWAG_PRICE.toFixed(2)}</span>
+                    <div className="flex justify-between text-sm mt-2 pt-2 border-t border-dashed border-ink/25">
+                      <span className="text-ink2">Price</span>
+                      <span className="font-display text-lg text-clay">${SWAG_PRICE.toFixed(2)}</span>
                     </div>
                   </div>
                 )}

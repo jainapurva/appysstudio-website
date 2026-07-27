@@ -33,8 +33,8 @@ export default function OrderSuccess() {
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 text-purple-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Confirming your order...</p>
+          <Loader2 className="w-10 h-10 text-clay animate-spin mx-auto mb-4" />
+          <p className="text-ink2">Confirming your order...</p>
         </div>
       </div>
     );
@@ -43,18 +43,18 @@ export default function OrderSuccess() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <div className="max-w-md text-center">
-        <div className="w-24 h-24 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-8">
-          <CheckCircle className="w-12 h-12 text-emerald-500" />
+        <div className="w-24 h-24 bg-butter/50 rounded-3xl flex items-center justify-center mx-auto mb-8">
+          <span className="text-[44px] text-craft-orange craft-spin !animate-[craft-spin_8s_linear_infinite]">✳︎</span>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Order Confirmed!</h1>
+        <h1 className="font-display text-[clamp(30px,4vw,40px)] text-ink mb-3">Order confirmed!</h1>
         {orderId && (
-          <p className="text-gray-500 mb-2">Order <code className="bg-gray-100 px-3 py-1 rounded-lg text-sm font-mono">{orderId}</code></p>
+          <p className="text-ink2 mb-2">Order <code className="bg-paper2 px-3 py-1 rounded-lg text-sm font-mono">{orderId}</code></p>
         )}
-        <p className="text-gray-500 mb-2 leading-relaxed">Payment received. We&apos;ll start printing your order right away.</p>
-        <p className="text-gray-400 text-sm mb-10">You&apos;ll receive an email confirmation with your order details and tracking info once shipped.</p>
+        <p className="text-ink2 mb-2 leading-relaxed">Payment received. A printer is warming up with your name on the queue.</p>
+        <p className="text-ink2/80 text-sm mb-10">You&apos;ll receive an email confirmation with your order details and tracking info once shipped.</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/shop" className="bg-gradient-to-r from-purple-500 to-purple-400 text-white px-8 py-3.5 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/25 transition-all">Continue Shopping</Link>
-          <Link href="/" className="ring-2 ring-gray-200 hover:ring-gray-300 text-gray-700 px-8 py-3.5 rounded-xl font-bold transition-all">Back to Home</Link>
+          <Link href="/shop" className="btn-clay">Continue shopping</Link>
+          <Link href="/" className="btn-line">Back to home</Link>
         </div>
       </div>
     </div>

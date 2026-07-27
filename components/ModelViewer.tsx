@@ -45,7 +45,7 @@ class ModelErrorBoundary extends Component<
           <p className="text-xs text-gray-500">{this.state.message}</p>
           <button
             onClick={() => this.setState({ hasError: false, message: '' })}
-            className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors mt-1"
+            className="flex items-center gap-1.5 text-xs text-craft-orange hover:text-butter transition-colors mt-1"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Try again
           </button>

@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { products } from '@/lib/products';
 import ShopSection from '@/components/ShopSection';
 import QuoteForm from '@/components/QuoteForm';
-import { ArrowRight, Star, Upload, CheckCircle, Package, Zap, Shield, Truck } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: "Appy's Studio — Custom 3D Printed Products",
@@ -96,171 +95,186 @@ const jsonLd = {
   ],
 };
 
+const FILAMENT_DOTS = [
+  { name: 'White', bg: '#F4F4EF' },
+  { name: 'Black', bg: '#252525' },
+  { name: 'Red', bg: '#CC2222' },
+  { name: 'Blue', bg: '#2255BB' },
+  { name: 'Yellow', bg: '#FFD700' },
+  { name: 'Green', bg: '#33AA55' },
+  { name: 'Orange', bg: '#FF6633' },
+  { name: 'Gray', bg: '#888888' },
+  { name: 'Pink', bg: '#FF88AA' },
+  { name: 'Purple', bg: '#7744BB' },
+  { name: 'Red · Sunlu', bg: '#DD1111' },
+  { name: 'Blue · Sunlu', bg: '#1E4DB7' },
+  { name: 'Yellow · Sunlu', bg: '#FFCC00' },
+  { name: 'Green · Sunlu', bg: '#22AA44' },
+  { name: 'Orange · Sunlu', bg: '#FF5500' },
+  { name: 'Silk Gold', bg: 'linear-gradient(135deg,#e8c55a,#D4AF37)' },
+  { name: 'Silk Silver', bg: 'linear-gradient(135deg,#dddddd,#aaaaaa)' },
+  { name: 'Transparent', bg: '#C8E8F0' },
+];
+
+const MARQUEE_ITEMS = ['desk organizers', 'named bag charms', 'catan trays', 'book trackers', 'robot watch stands', 'controller stands', 'your idea, printed'];
+
+const FAQS = [
+  { q: 'What materials do you print with?', a: 'Mostly PLA, PETG, TPU, and ASA. PLA is lovely for most indoor pieces, PETG shrugs off moisture, TPU bends and bounces, and ASA lives happily outdoors.' },
+  { q: 'How long does printing take?', a: "Most shelf items ship in 1–5 business days. Custom prints depend on how ambitious you're feeling — your quote will have the exact lead time." },
+  { q: 'What file formats can I send?', a: "STL, OBJ, 3MF, STEP, IGES, FBX, PLY, AMF, and GCODE. If it's a common 3D format, we can almost certainly print it." },
+  { q: 'Do you do bulk orders?', a: 'Happily! Orders of 10+ pieces get volume pricing. Write to us for a custom quote.' },
+  { q: 'What colors are available?', a: 'Every piece comes in your choice of 20+ filament colors — always free. Specialty silks may add a tiny upcharge.' },
+];
+
 export default function Home() {
   return (
-    <div className="bg-stone-50">
+    <div className="bg-paper overflow-x-hidden">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-stone-100 pt-20 pb-28 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-600/15 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent" />
-        <div className="max-w-7xl mx-auto relative">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-amber-600/10 text-amber-700 text-sm font-semibold px-4 py-2 rounded-full mb-8 ring-1 ring-amber-600/20">
-                <Star className="w-4 h-4 fill-amber-600" />
-                4,000+ pieces shipped and counting
-              </div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-stone-900 mb-6 leading-[1.1] tracking-tight">
-                Precision 3D Prints,{' '}
-                <span className="bg-gradient-to-r from-amber-700 to-amber-500 bg-clip-text text-transparent">Built to Order</span>
-              </h1>
-              <p className="text-lg text-stone-600 max-w-lg mb-10 leading-relaxed">
-                From desk organizers to custom 3D printed objects — we make functional, beautiful 3D printed products with fast turnaround and real craftsmanship. Send us your design to get a quote.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#shop" className="bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-700/25 hover:shadow-amber-700/40">
-                  Shop Products <ArrowRight className="w-5 h-5" />
-                </a>
-                <a href="#custom" className="bg-stone-900/5 ring-1 ring-stone-900/10 hover:bg-stone-900/10 text-stone-800 px-8 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2">
-                  <Upload className="w-5 h-5" /> Upload Your Design
-                </a>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="relative w-full aspect-square max-w-lg ml-auto">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 to-amber-500/15 rounded-3xl rotate-3" />
-                <div className="relative w-full h-full rounded-3xl overflow-hidden ring-1 ring-stone-900/10">
-                  <Image
-                    src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&h=800&fit=crop"
-                    alt="3D Printing"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </div>
+      <header className="pt-[72px] pb-24 px-4 sm:px-8">
+        <div className="max-w-[1140px] mx-auto grid grid-cols-1 lg:grid-cols-[1.1fr_.9fr] gap-12 items-center">
+          <div>
+            <div className="kicker mb-5">Handmade in the USA · 4,000+ pieces shipped</div>
+            <h1 className="text-[clamp(44px,5.6vw,72px)] leading-[1.05] mb-6 text-ink">
+              Little joys,<br />
+              printed{' '}
+              <span className="squig">
+                layer by layer
+                <svg viewBox="0 0 300 16" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M2 10 Q 25 2, 50 9 T 100 9 T 150 9 T 200 9 T 250 9 T 298 8" />
+                </svg>
+              </span>
+            </h1>
+            <p className="text-[19px] leading-[1.65] text-ink2 max-w-[460px] mb-9">
+              We&apos;re a tiny studio making cheerful, useful things — organizers, game-night trays, little robots that hold your watch. Every piece is printed fresh when you order it, in a color you pick.
+            </p>
+            <div className="flex gap-4 flex-wrap">
+              <a href="#shop" className="btn-clay">Browse the shelf →</a>
+              <a href="#custom" className="btn-line">Print my idea</a>
             </div>
           </div>
+          <div className="relative h-[480px] hidden sm:block">
+            <svg className="absolute -top-3.5 right-[16%] w-[110px] h-[110px] z-5 craft-spin !animate-[craft-spin_16s_linear_infinite]" viewBox="0 0 110 110" aria-hidden="true">
+              <defs>
+                <path id="circ" d="M55,55 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" />
+              </defs>
+              <text className="fill-sage-dark font-bold uppercase" style={{ fontSize: '10px', letterSpacing: '.14em' }}>
+                <textPath href="#circ">made with love · made to order ·&#160;</textPath>
+              </text>
+              <text x="55" y="66" textAnchor="middle" className="fill-sage-dark" style={{ fontSize: '30px' }}>✳︎</text>
+            </svg>
+            <figure className="pol w-[250px] top-[26px] left-[6%] -rotate-6 z-2">
+              <Image src="/products/book-tracker-lifestyle.jpg" alt="Book tracker on a shelf" width={226} height={210} className="object-cover rounded-[2px] w-[226px] h-[210px]" priority />
+              <figcaption>your reading year</figcaption>
+            </figure>
+            <figure className="pol w-[230px] top-[130px] right-[4%] rotate-[4deg] z-3 [animation-delay:1.2s]">
+              <Image src="/products/love-lamp-lifestyle.jpg" alt="Love lamp glowing warmly" width={206} height={190} className="object-cover rounded-[2px] w-[206px] h-[190px]" priority />
+              <figcaption>a warm glow</figcaption>
+            </figure>
+            <figure className="pol w-[210px] bottom-0 left-[24%] -rotate-2 z-4 [animation-delay:2.4s]">
+              <Image src="/products/catan-tray-1.jpg" alt="Catan player trays" width={186} height={170} className="object-cover rounded-[2px] w-[186px] h-[170px]" priority />
+              <figcaption>game night, sorted</figcaption>
+            </figure>
+          </div>
         </div>
-      </section>
+      </header>
 
-      {/* Stats */}
-      <section className="bg-stone-50 py-16 px-4 border-b border-stone-200">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: '4,000+', label: 'Pieces Shipped', icon: Truck },
-            { value: '3+', label: 'Products', icon: Package },
-            { value: '1-5', label: 'Day Lead Time', icon: Zap },
-            { value: '5+', label: 'Materials Available', icon: Shield },
-          ].map(s => (
-            <div key={s.label} className="text-center">
-              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <s.icon className="w-6 h-6 text-amber-700" />
-              </div>
-              <div className="text-3xl font-extrabold text-stone-900 mb-1">{s.value}</div>
-              <div className="text-stone-500 text-sm font-medium">{s.label}</div>
-            </div>
+      {/* Marquee */}
+      <div className="marq" aria-hidden="true">
+        <div className="marq-in">
+          {[0, 1].map(dup => (
+            <span key={dup} className="contents">
+              {MARQUEE_ITEMS.map(item => (
+                <span key={`${dup}-${item}`}>{item}<b>✳︎</b></span>
+              ))}
+            </span>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Shop — Products with category tabs */}
-      <section id="shop" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 scroll-mt-20">
-        <div className="text-center mb-12">
-          <p className="text-amber-700 font-semibold text-sm uppercase tracking-wider mb-2">Our Collection</p>
-          <h2 className="text-4xl font-extrabold text-stone-900">Shop Products</h2>
-          <p className="text-stone-500 mt-2 max-w-xl mx-auto">Browse our catalog of ready-to-print items — made fresh to order.</p>
+      {/* Shop — The shelf */}
+      <section id="shop" className="max-w-[1140px] mx-auto px-4 sm:px-8 pt-[104px] pb-10 scroll-mt-20">
+        <div className="text-center mb-5">
+          <h2 className="text-[clamp(34px,4vw,50px)] mb-3 text-ink">The shelf</h2>
+          <p className="text-ink2 text-[17px]">Little things we love making. Each one printed to order, just for you.</p>
         </div>
+        <p className="hand-note text-center text-[19px] mb-11">~ go on, pick one up ~</p>
         <ShopSection products={products} />
       </section>
 
-      {/* How it works */}
-      <section id="how" className="bg-amber-50 py-24 px-4 scroll-mt-20">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-amber-700 font-semibold text-sm uppercase tracking-wider mb-2">Simple Process</p>
-            <h2 className="text-4xl font-extrabold text-stone-900">How It Works</h2>
-            <p className="text-stone-500 mt-2 max-w-2xl mx-auto">Ordering is simple — whether you pick from our catalog or bring your own design.</p>
+      {/* Colors */}
+      <section id="colors" className="py-24 px-4 text-center">
+        <div className="max-w-[1140px] mx-auto">
+          <h2 className="text-[clamp(34px,4vw,50px)] mb-3 text-ink">Pick a color, any color</h2>
+          <p className="text-ink2 text-[17px]">Every piece comes in your choice of 20+ filament colors — always free.</p>
+          <div className="flex flex-wrap gap-3.5 justify-center max-w-[640px] mx-auto mt-10 mb-5">
+            {FILAMENT_DOTS.map(dot => (
+              <div key={dot.name} className="group relative w-11 h-11 rounded-full border-[3px] border-white shadow-[0_3px_8px_rgba(61,47,36,.2)] transition-transform duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] hover:scale-[1.35] hover:rotate-[10deg] hover:z-2 cursor-pointer" style={{ background: dot.bg }}>
+                <span className="absolute -bottom-[30px] left-1/2 -translate-x-1/2 scale-75 bg-ink text-paper text-[11px] font-bold px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all whitespace-nowrap pointer-events-none">{dot.name}</span>
+              </div>
+            ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow border border-stone-100">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-700 to-amber-500 rounded-2xl flex items-center justify-center mb-6">
-                <Package className="w-7 h-7 text-white" />
+          <p className="hand-note text-[19px] !text-ink2">~ specialty silks may add a tiny upcharge ~</p>
+        </div>
+      </section>
+
+      {/* How we make */}
+      <section id="how" className="bg-paper2 border-y border-dashed border-ink/25 py-24 px-4 scroll-mt-20">
+        <div className="max-w-[1140px] mx-auto">
+          <div className="text-center">
+            <h2 className="text-[clamp(34px,4vw,50px)] mb-3 text-ink">How we make your thing</h2>
+            <p className="text-ink2 text-[17px]">No warehouses, no dusty stock. Just a printer warming up with your name on the queue.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-9 mt-14">
+            {[
+              { n: '1', title: 'You pick', text: 'Choose from the shelf — or upload your own 3D file for something one-of-a-kind. Tell us your color.' },
+              { n: '2', title: 'We print', text: 'Your piece is printed fresh, checked over, and finished by hand. Custom quotes come back within 24 hours.' },
+              { n: '3', title: 'It arrives', text: 'Packed up snug and shipped in 1–5 days across the USA and Canada. Ta-da — a little joy in the mail.' },
+            ].map(step => (
+              <div key={step.n} className="step text-center px-3">
+                <div className="stepnum">{step.n}</div>
+                <h3 className="text-[22px] mb-2.5 text-ink">{step.title}</h3>
+                <p className="text-ink2 text-[15px] leading-relaxed">{step.text}</p>
               </div>
-              <h3 className="text-xl font-bold mb-4 text-stone-900">Order from Catalog</h3>
-              <ol className="space-y-3 text-stone-600 text-sm">
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Browse our product catalog above</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Add items to cart, choose material &amp; color</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Place your order — we start printing</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Delivered in 1-5 days</span></li>
-              </ol>
-            </div>
-            <div className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow border border-stone-100">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-700 to-amber-500 rounded-2xl flex items-center justify-center mb-6">
-                <Upload className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-stone-900">Custom 3D Print</h3>
-              <ol className="space-y-3 text-stone-600 text-sm">
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Upload your 3D file below</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Tell us material, color &amp; quantity</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>We review and send you a quote + lead time</span></li>
-                <li className="flex gap-3"><CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" /><span>Approve and we start printing</span></li>
-              </ol>
-              <a href="#custom" className="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-800 hover:to-amber-700 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-amber-700/25">
-                Get a Quote <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Custom Print Quote */}
-      <section id="custom" className="bg-stone-900 py-24 px-4 scroll-mt-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-amber-400 font-semibold text-sm uppercase tracking-wider mb-2">Custom</p>
-            <h2 className="text-4xl font-extrabold text-white">Custom Print Quote</h2>
-            <p className="text-stone-400 mt-3 max-w-xl mx-auto">Upload your 3D file and tell us what you need. We&apos;ll send you a price and lead time within 24 hours.</p>
+      {/* Custom quote */}
+      <section id="custom" className="bg-clay py-[104px] px-4 scroll-mt-20 relative overflow-hidden">
+        <span className="absolute -top-[60px] -left-10 text-[200px] text-paper/8 craft-spin !animate-[craft-spin_30s_linear_infinite]" aria-hidden="true">✳︎</span>
+        <span className="absolute -bottom-[70px] -right-8 text-[200px] text-paper/8 craft-spin !animate-[craft-spin_30s_linear_infinite_reverse]" aria-hidden="true">✳︎</span>
+        <div className="max-w-3xl mx-auto relative">
+          <div className="text-center mb-10">
+            <h2 className="text-[clamp(34px,4vw,50px)] text-white mb-4">Got an idea in your head?</h2>
+            <p className="text-paper/85 text-[17px] leading-[1.65] max-w-[520px] mx-auto">
+              Upload your 3D file and a note about what you&apos;re dreaming up. We&apos;ll write back within 24 hours with a price, a lead time, and probably some excitement.
+            </p>
           </div>
           <QuoteForm />
+          <div className="flex flex-wrap gap-2.5 justify-center mt-8">
+            {['STL', 'OBJ', '3MF', 'STEP', 'FBX', 'PLY', '+ more'].map(f => (
+              <span key={f} className="border-[1.5px] border-dashed border-paper/50 text-paper px-4 py-2 rounded-full font-bold text-[13px] tracking-wide">{f}</span>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="bg-amber-50 py-24 px-4 scroll-mt-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-amber-700 font-semibold text-sm uppercase tracking-wider mb-2">Support</p>
-            <h2 className="text-4xl font-extrabold text-stone-900">Frequently Asked Questions</h2>
-          </div>
-          {[
-            { q: 'What materials do you print with?', a: 'We primarily use PLA, PETG, TPU, and ASA. PLA is great for most indoor products, PETG for moisture resistance, TPU for flexible parts, and ASA for outdoor use.' },
-            { q: 'How long does printing take?', a: "Most catalog items ship in 1-5 business days. Custom prints depend on complexity — we'll tell you the exact lead time in your quote." },
-            { q: 'What file formats do you accept for custom prints?', a: 'We accept STL, OBJ, 3MF, STEP, IGES, FBX, PLY, AMF, and GCODE files. Most common 3D file formats are supported.' },
-            { q: 'Do you offer bulk/wholesale pricing?', a: 'Yes! For orders of 10+ pieces we offer volume discounts. Contact us for a custom quote.' },
-            { q: 'What colors are available?', a: 'We stock 20+ colors for most materials including black, white, grey, red, blue, green, orange, and more. Some specialty colors may require a small upcharge.' },
-          ].map((faq, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 mb-4 border border-stone-100 shadow-sm">
-              <h4 className="font-bold text-stone-900 mb-2">{faq.q}</h4>
-              <p className="text-stone-500 text-sm leading-relaxed">{faq.a}</p>
-            </div>
+      <section id="faq" className="py-[104px] px-4 scroll-mt-20">
+        <div className="max-w-[760px] mx-auto">
+          <h2 className="text-center text-[clamp(32px,4vw,46px)] mb-12 text-ink">Wondering something?</h2>
+          {FAQS.map(faq => (
+            <details key={faq.q} className="group bg-white rounded-2xl mb-3.5 shadow-[0_2px_0_rgba(61,47,36,.1)] overflow-hidden">
+              <summary className="px-6.5 py-5 font-bold text-[16.5px] cursor-pointer list-none flex justify-between items-center text-ink [&::-webkit-details-marker]:hidden">
+                {faq.q}
+                <span className="font-display text-2xl text-clay transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="px-6.5 pb-5.5 text-ink2 text-[15px] leading-[1.65]">{faq.a}</p>
+            </details>
           ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative overflow-hidden py-24 px-4">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-800 to-amber-600" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent" />
-        <div className="relative text-center max-w-2xl mx-auto">
-          <h2 className="text-4xl font-extrabold text-white mb-4">Ready to print something amazing?</h2>
-          <p className="text-amber-100 mb-10 text-lg">Browse our catalog or upload your own design. Fast turnaround, great quality.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#shop" className="bg-white text-amber-800 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-amber-50 transition-colors shadow-lg">Shop Now</a>
-            <a href="#custom" className="ring-2 ring-white text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white/10 transition-colors">Custom Quote</a>
-          </div>
         </div>
       </section>
     </div>

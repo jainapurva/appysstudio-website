@@ -59,7 +59,7 @@ describe('AccountPage', () => {
     render(<AccountPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Profile Information')).toBeInTheDocument();
+      expect(screen.getByText('Profile information')).toBeInTheDocument();
     });
 
     // Check form is pre-filled

@@ -53,22 +53,21 @@ describe('ProductCard', () => {
     expect(screen.getByText('Desk Organizer Pro')).toBeInTheDocument();
     expect(screen.getByText('A great desk organizer')).toBeInTheDocument();
     expect(screen.getByText('$24.99')).toBeInTheDocument();
-    expect(screen.getByText('2-3 days')).toBeInTheDocument();
+    expect(screen.getByText(/2-3 days/)).toBeInTheDocument();
     expect(screen.getByText('PLA / PETG')).toBeInTheDocument();
   });
 
-  it('renders features', () => {
+  it('does not render feature chips on the card (features live in the modal)', () => {
     render(<ProductCard product={mockProduct} />);
 
-    expect(screen.getByText('6 compartments')).toBeInTheDocument();
-    expect(screen.getByText('Stackable')).toBeInTheDocument();
-    expect(screen.getByText('Non-slip')).toBeInTheDocument();
+    expect(screen.queryByText('6 compartments')).not.toBeInTheDocument();
+    expect(screen.queryByText('Stackable')).not.toBeInTheDocument();
   });
 
   it('calls addItem on Add to Cart click', () => {
     render(<ProductCard product={mockProduct} />);
 
-    fireEvent.click(screen.getByText('Add to Cart'));
+    fireEvent.click(screen.getByText('Add to basket'));
     expect(mockAddItem).toHaveBeenCalledWith(mockProduct);
   });
 

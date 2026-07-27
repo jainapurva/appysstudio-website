@@ -69,99 +69,99 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-clay" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {session?.user?.image ? (
-              <Image src={session.user.image} alt="" width={48} height={48} className="rounded-full ring-2 ring-purple-500/50" />
+              <Image src={session.user.image} alt="" width={48} height={48} className="rounded-full ring-2 ring-clay/50" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white text-lg font-bold">
+              <div className="w-12 h-12 rounded-full bg-clay flex items-center justify-center text-white text-lg font-bold">
                 {session?.user?.name?.[0]?.toUpperCase() || '?'}
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">{session?.user?.name}</h1>
-              <p className="text-sm text-gray-500">{session?.user?.email}</p>
+              <h1 className="font-display text-[26px] text-ink">{session?.user?.name}</h1>
+              <p className="text-sm text-ink2">{session?.user?.email}</p>
             </div>
           </div>
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="flex items-center gap-2 text-sm text-ink2 hover:text-clay-dark transition-colors">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>
 
-        <div className="flex gap-1 mb-8 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+        <div className="flex gap-1 mb-8 bg-white rounded-full p-1 shadow-[0_2px_0_rgba(61,47,36,.1)]">
           {tabs.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                tab === t.id ? 'bg-purple-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-bold transition-all ${
+                tab === t.id ? 'bg-clay text-white' : 'text-ink2 hover:text-ink hover:bg-paper'
               }`}
             >
               {t.icon} {t.label}
               {t.id === 'orders' && orders.length > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-purple-400' : 'bg-gray-100'}`}>{orders.length}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-clay-dark' : 'bg-paper2'}`}>{orders.length}</span>
               )}
               {t.id === 'watchlist' && watchlist.length > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-purple-400' : 'bg-gray-100'}`}>{watchlist.length}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-clay-dark' : 'bg-paper2'}`}>{watchlist.length}</span>
               )}
             </button>
           ))}
         </div>
 
         {tab === 'profile' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h2 className="font-bold text-lg mb-6 text-gray-900">Profile Information</h2>
+          <div className="bg-white rounded-2xl p-6 shadow-[0_3px_0_rgba(61,47,36,.12),0_10px_24px_rgba(61,47,36,.08)]">
+            <h2 className="font-display text-[22px] mb-6 text-ink">Profile information</h2>
             <div className="space-y-4 max-w-md">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-[12.5px] font-bold uppercase tracking-[.1em] text-ink mb-1.5">Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  className="craft-input text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-[12.5px] font-bold uppercase tracking-[.1em] text-ink mb-1.5">Email</label>
                 <input
                   type="email"
                   value={session?.user?.email || ''}
                   disabled
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 text-gray-500"
+                  className="craft-input text-sm !bg-paper2 !text-ink2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-[12.5px] font-bold uppercase tracking-[.1em] text-ink mb-1.5">Phone</label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={e => setFormData(f => ({ ...f, phone: e.target.value }))}
                   placeholder="Optional"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                  className="craft-input text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
+                <label className="block text-[12.5px] font-bold uppercase tracking-[.1em] text-ink mb-1.5">Shipping Address</label>
                 <textarea
                   value={formData.address}
                   onChange={e => setFormData(f => ({ ...f, address: e.target.value }))}
                   placeholder="Optional — for faster checkout"
                   rows={3}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none"
+                  className="craft-input text-sm resize-none"
                 />
               </div>
               <button
                 onClick={handleSaveProfile}
                 disabled={saving}
-                className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 disabled:bg-purple-300 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all"
+                className="btn-clay !py-2.5 !px-6 !text-sm"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save Changes'}
@@ -173,27 +173,27 @@ export default function AccountPage() {
         {tab === 'orders' && (
           <div className="space-y-4">
             {orders.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="font-bold text-gray-900 mb-1">No orders yet</h3>
-                <p className="text-gray-500 text-sm mb-6">Your order history will appear here.</p>
-                <Link href="/#shop" className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all inline-block">
+              <div className="bg-white rounded-2xl p-12 shadow-[0_2px_0_rgba(61,47,36,.1)] text-center">
+                <Package className="w-12 h-12 text-ink2/30 mx-auto mb-4" />
+                <h3 className="font-display text-[20px] text-ink mb-1">No orders yet</h3>
+                <p className="text-ink2 text-sm mb-6">Your order history will appear here.</p>
+                <Link href="/#shop" className="btn-clay !py-2.5 !px-6 !text-sm">
                   Browse Products
                 </Link>
               </div>
             ) : (
               orders.map((order: Order) => (
-                <div key={order.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div key={order.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_0_rgba(61,47,36,.1)]">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="font-bold text-gray-900 text-sm">Order #{order.id}</p>
-                      <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="font-bold text-ink text-sm">Order #{order.id}</p>
+                      <p className="text-xs text-ink2/80">{new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                      order.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' :
-                      order.status === 'shipped' ? 'bg-blue-50 text-blue-600' :
-                      order.status === 'confirmed' ? 'bg-purple-50 text-purple-600' :
-                      'bg-gray-100 text-gray-600'
+                      order.status === 'delivered' ? 'bg-sage/20 text-sage-dark' :
+                      order.status === 'shipped' ? 'bg-butter text-ink' :
+                      order.status === 'confirmed' ? 'bg-craft-orange/20 text-clay-dark' :
+                      'bg-paper2 text-ink2'
                     }`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
@@ -202,14 +202,14 @@ export default function AccountPage() {
                     <div className="space-y-1.5">
                       {order.items.map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
-                          <span className="text-gray-600">{item.productName} x{item.quantity}</span>
-                          <span className="font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</span>
+                          <span className="text-ink2">{item.productName} x{item.quantity}</span>
+                          <span className="font-medium text-ink">${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
                   )}
                   {order.totalAmount && (
-                    <div className="flex justify-between mt-3 pt-3 border-t border-gray-100 font-bold text-sm">
+                    <div className="flex justify-between mt-3 pt-3 border-t border-dashed border-ink/25 font-bold text-sm">
                       <span>Total</span>
                       <span>${order.totalAmount.toFixed(2)}</span>
                     </div>
@@ -223,11 +223,11 @@ export default function AccountPage() {
         {tab === 'watchlist' && (
           <div>
             {watchlist.length === 0 ? (
-              <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
-                <Heart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="font-bold text-gray-900 mb-1">Your watchlist is empty</h3>
-                <p className="text-gray-500 text-sm mb-6">Click the heart icon on products to save them here.</p>
-                <Link href="/#shop" className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-all inline-block">
+              <div className="bg-white rounded-2xl p-12 shadow-[0_2px_0_rgba(61,47,36,.1)] text-center">
+                <Heart className="w-12 h-12 text-ink2/30 mx-auto mb-4" />
+                <h3 className="font-display text-[20px] text-ink mb-1">Your watchlist is empty</h3>
+                <p className="text-ink2 text-sm mb-6">Click the heart icon on products to save them here.</p>
+                <Link href="/#shop" className="btn-clay !py-2.5 !px-6 !text-sm">
                   Browse Products
                 </Link>
               </div>
@@ -237,20 +237,20 @@ export default function AccountPage() {
                   const product = products.find(p => p.id === productId);
                   if (!product) return null;
                   return (
-                    <div key={product.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4">
-                      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 relative bg-gray-100">
+                    <div key={product.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_0_rgba(61,47,36,.1)] flex gap-4">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 relative bg-paper2">
                         <Image src={product.image} alt={product.name} fill className="object-cover" sizes="80px" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-sm truncate">{product.name}</h3>
-                        <p className="text-lg font-extrabold text-gray-900 mt-1">${product.price.toFixed(2)}</p>
+                        <h3 className="font-bold text-ink text-sm truncate">{product.name}</h3>
+                        <p className="font-display text-lg text-clay mt-1">${product.price.toFixed(2)}</p>
                         <div className="flex gap-2 mt-2">
-                          <Link href="/#shop" className="text-xs bg-purple-500 text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-purple-600 transition-colors">
+                          <Link href="/#shop" className="text-xs bg-clay text-white px-3 py-1.5 rounded-full font-bold hover:bg-clay-dark transition-colors">
                             View
                           </Link>
                           <button
                             onClick={() => removeFromWatchlist(product.id)}
-                            className="text-xs text-gray-500 hover:text-red-500 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-red-200 transition-colors"
+                            className="text-xs text-ink2 hover:text-[#b3402a] px-3 py-1.5 rounded-full border border-dashed border-ink/30 transition-colors"
                           >
                             Remove
                           </button>

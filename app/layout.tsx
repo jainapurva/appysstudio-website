@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Gloock, Instrument_Serif, Karla } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -7,7 +7,9 @@ import Footer from '@/components/Footer';
 import { CartProvider } from '@/context/CartContext';
 import AuthProvider from '@/components/AuthProvider';
 
-const inter = Inter({ subsets: ['latin'] });
+const gloock = Gloock({ weight: '400', subsets: ['latin'], variable: '--font-gloock' });
+const instrument = Instrument_Serif({ weight: '400', style: ['normal', 'italic'], subsets: ['latin'], variable: '--font-instrument' });
+const karla = Karla({ subsets: ['latin'], variable: '--font-karla' });
 
 const BASE_URL = 'https://appysstudio.com';
 
@@ -70,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
       </head>
-      <body className={inter.className}>
+      <body className={`${gloock.variable} ${instrument.variable} ${karla.variable} font-sans`}>
         <AuthProvider>
           <CartProvider>
             <Navbar />

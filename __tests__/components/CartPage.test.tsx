@@ -58,8 +58,8 @@ describe('CartPage', () => {
 
   it('shows empty state when cart has no items', () => {
     render(<CartPage />);
-    expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
-    expect(screen.getByText('Browse Products')).toBeInTheDocument();
+    expect(screen.getByText('Your basket is empty')).toBeInTheDocument();
+    expect(screen.getByText('Browse the shelf')).toBeInTheDocument();
   });
 
   it('renders cart items', () => {

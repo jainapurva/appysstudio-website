@@ -12,8 +12,8 @@ import {
 const ModelViewer = dynamic(() => import('@/components/ModelViewer'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-gray-950 rounded-2xl">
-      <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+    <div className="w-full h-full flex items-center justify-center bg-ink rounded-2xl">
+      <Loader2 className="w-8 h-8 text-craft-orange animate-spin" />
     </div>
   ),
 });
@@ -58,22 +58,22 @@ function saveJobs(jobs: GenerationJob[]) {
 function SignInWall() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      <div className="w-20 h-20 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-purple-500/20">
-        <Sparkles className="w-10 h-10 text-purple-400" />
+      <div className="w-20 h-20 bg-craft-orange/10 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-craft-orange/20">
+        <Sparkles className="w-10 h-10 text-craft-orange" />
       </div>
       <h2 className="text-2xl font-extrabold mb-2">Sign in to use the AI Generator</h2>
-      <p className="text-gray-400 text-sm max-w-sm mb-2">
-        Create a free account and get <span className="text-purple-300 font-semibold">2 free 3D generations</span> instantly.
+      <p className="text-foot-text text-sm max-w-sm mb-2">
+        Create a free account and get <span className="text-craft-orange font-semibold">2 free 3D generations</span> instantly.
         No credit card required.
       </p>
-      <div className="flex gap-6 text-sm text-gray-500 mb-8">
+      <div className="flex gap-6 text-sm text-foot-text/70 mb-8">
         <span>✓ 2 free generations</span>
         <span>✓ Preview in browser</span>
         <span>✓ Order as a print</span>
       </div>
       <button
         onClick={() => signIn(undefined, { callbackUrl: '/3d-generator' })}
-        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-500/25"
+        className="flex items-center gap-2 bg-clay hover:bg-clay-dark text-white px-8 py-3.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-clay/25"
       >
         <LogIn className="w-4 h-4" /> Sign in / Create Account
       </button>
@@ -89,13 +89,13 @@ function PurchaseModal({ onClose, onPurchase, purchasing }: {
 }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-gray-900 rounded-2xl border border-gray-700 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#33271d] rounded-2xl border border-white/15 p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h3 className="text-lg font-bold">Get more generations</h3>
-            <p className="text-gray-400 text-xs mt-0.5">Credits never expire · Use anytime</p>
+            <p className="text-foot-text text-xs mt-0.5">Credits never expire · Use anytime</p>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-foot-text/70 hover:text-white"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="space-y-3">
@@ -106,24 +106,24 @@ function PurchaseModal({ onClose, onPurchase, purchasing }: {
               disabled={purchasing !== null}
               className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all disabled:opacity-60 ${
                 pack.popular
-                  ? 'border-purple-500 bg-purple-500/10 hover:bg-purple-500/20'
-                  : 'border-gray-700 hover:border-gray-500 bg-gray-800/50'
+                  ? 'border-craft-orange bg-craft-orange/10 hover:bg-craft-orange/20'
+                  : 'border-white/15 hover:border-white/30 bg-white/5'
               }`}
             >
               <div className="flex items-center gap-3">
                 {pack.popular && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />}
-                {!pack.popular && <Zap className="w-4 h-4 text-gray-400" />}
+                {!pack.popular && <Zap className="w-4 h-4 text-foot-text" />}
                 <div className="text-left">
                   <div className="font-semibold text-sm flex items-center gap-2">
                     {pack.label}
-                    {pack.popular && <span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full">Best Value</span>}
+                    {pack.popular && <span className="text-[10px] bg-clay text-white px-1.5 py-0.5 rounded-full">Best Value</span>}
                   </div>
-                  <div className="text-gray-400 text-xs">{pack.credits} generations · {pack.perCredit} each</div>
+                  <div className="text-foot-text text-xs">{pack.credits} generations · {pack.perCredit} each</div>
                 </div>
               </div>
               <div className="text-right">
                 {purchasing === pack.id ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-craft-orange" />
                 ) : (
                   <span className="font-bold text-sm">${pack.price}</span>
                 )}
@@ -132,7 +132,7 @@ function PurchaseModal({ onClose, onPurchase, purchasing }: {
           ))}
         </div>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p className="text-xs text-foot-text/70 text-center mt-4">
           Secure checkout via Square · USD pricing
         </p>
       </div>
@@ -147,14 +147,14 @@ function CreditBadge({ info, onBuy }: { info: CreditInfo; onBuy: () => void }) {
     <div className="flex items-center gap-2">
       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
         total === 0 ? 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'
-        : total <= 2 ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20'
+        : total <= 2 ? 'bg-butter/15 text-butter ring-1 ring-butter/25'
         : 'bg-green-500/10 text-green-400 ring-1 ring-green-500/20'
       }`}>
         <Sparkles className="w-3 h-3" />
         {total === 0 ? 'No credits' : `${total} credit${total !== 1 ? 's' : ''} left`}
         {info.freeRemaining > 0 && <span className="text-[10px] opacity-70">({info.freeRemaining} free)</span>}
       </div>
-      <button onClick={onBuy} className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium">
+      <button onClick={onBuy} className="text-xs text-craft-orange hover:text-craft-orange transition-colors font-medium">
         + Buy more
       </button>
     </div>
@@ -457,14 +457,14 @@ export default function GeneratorPage() {
   // Loading auth state
   if (authStatus === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      <div className="min-h-screen bg-ink flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-craft-orange animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-ink text-white">
       {showPurchase && (
         <PurchaseModal
           onClose={() => setShowPurchase(false)}
@@ -474,17 +474,17 @@ export default function GeneratorPage() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white text-sm font-medium mb-8 transition-colors">
+        <Link href="/" className="inline-flex items-center gap-2 text-foot-text hover:text-white text-sm font-medium mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to shop
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 bg-purple-500/10 text-purple-300 text-sm font-semibold px-4 py-2 rounded-full mb-4 ring-1 ring-purple-500/20">
+            <div className="inline-flex items-center gap-2 bg-craft-orange/10 text-craft-orange text-sm font-semibold px-4 py-2 rounded-full mb-4 ring-1 ring-craft-orange/20">
               <Sparkles className="w-4 h-4" /> AI-Powered 3D Generator
             </div>
             <h1 className="text-4xl font-extrabold mb-2">Turn Ideas into 3D Models</h1>
-            <p className="text-gray-400">Type a description or upload an image — we&apos;ll generate a printable 3D model.</p>
+            <p className="text-foot-text">Type a description or upload an image — we&apos;ll generate a printable 3D model.</p>
           </div>
           {session?.user && creditInfo && (
             <CreditBadge info={creditInfo} onBuy={() => setShowPurchase(true)} />
@@ -499,14 +499,14 @@ export default function GeneratorPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left — Input */}
               <div className="lg:col-span-1">
-                <div className="bg-gray-900 rounded-2xl p-5 border border-gray-800">
+                <div className="bg-[#33271d] rounded-2xl p-5 border border-white/10">
                   {/* No-credits banner */}
                   {creditInfo && creditInfo.totalRemaining === 0 && (
-                    <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">
-                      <p className="text-amber-300 text-sm font-semibold mb-2">You&apos;ve used all your free generations</p>
+                    <div className="mb-4 bg-butter/15 border border-butter/25 rounded-xl p-3 text-center">
+                      <p className="text-butter text-sm font-semibold mb-2">You&apos;ve used all your free generations</p>
                       <button
                         onClick={() => setShowPurchase(true)}
-                        className="text-xs bg-amber-500 hover:bg-amber-600 text-black font-bold px-4 py-1.5 rounded-lg transition-colors"
+                        className="text-xs bg-butter hover:bg-craft-orange text-ink font-bold px-4 py-1.5 rounded-lg transition-colors"
                       >
                         Get more — from $1.99
                       </button>
@@ -514,10 +514,10 @@ export default function GeneratorPage() {
                   )}
 
                   {/* Tabs */}
-                  <div className="flex rounded-xl bg-gray-800 p-1 mb-5">
+                  <div className="flex rounded-xl bg-white/10 p-1 mb-5">
                     {(['text', 'image'] as Tab[]).map(t => (
                       <button key={t} onClick={() => setTab(t)} disabled={submitting}
-                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-purple-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}>
+                        className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${tab === t ? 'bg-clay text-white shadow' : 'text-foot-text hover:text-white'}`}>
                         {t === 'text' ? '✏️ Text' : '🖼️ Image'}
                       </button>
                     ))}
@@ -528,12 +528,12 @@ export default function GeneratorPage() {
                       <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
                         placeholder="Describe what you want to 3D print..."
                         rows={3} disabled={submitting}
-                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none disabled:opacity-50"
+                        className="w-full bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-craft-orange resize-none disabled:opacity-50"
                       />
                       <div className="flex flex-wrap gap-1.5">
                         {examplePrompts.map(p => (
                           <button key={p} onClick={() => setPrompt(p)} disabled={submitting}
-                            className="text-xs bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-2.5 py-1 rounded-lg transition-colors">
+                            className="text-xs bg-white/10 hover:bg-white/20 border border-white/15 text-foot-text px-2.5 py-1 rounded-lg transition-colors">
                             {p}
                           </button>
                         ))}
@@ -542,7 +542,7 @@ export default function GeneratorPage() {
                   ) : (
                     <div>
                       {imagePreview ? (
-                        <div className="relative rounded-xl overflow-hidden aspect-square bg-gray-800">
+                        <div className="relative rounded-xl overflow-hidden aspect-square bg-white/10">
                           <img src={imagePreview} alt="Uploaded" className="w-full h-full object-contain" />
                           <button onClick={() => { setImageFile(null); setImagePreview(null); }}
                             className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80">
@@ -551,7 +551,7 @@ export default function GeneratorPage() {
                         </div>
                       ) : (
                         <button onClick={() => fileInputRef.current?.click()}
-                          className="w-full aspect-square border-2 border-dashed border-gray-700 hover:border-purple-500 rounded-xl flex flex-col items-center justify-center gap-3 text-gray-500 hover:text-purple-400 transition-all">
+                          className="w-full aspect-square border-2 border-dashed border-white/15 hover:border-craft-orange rounded-xl flex flex-col items-center justify-center gap-3 text-foot-text/70 hover:text-craft-orange transition-all">
                           <Upload className="w-8 h-8" />
                           <span className="text-sm">Click to upload image</span>
                         </button>
@@ -562,18 +562,18 @@ export default function GeneratorPage() {
 
                   <button onClick={handleGenerate}
                     disabled={submitting || (tab === 'text' && !prompt.trim()) || (tab === 'image' && !imageFile) || (creditInfo?.totalRemaining === 0)}
-                    className="mt-4 w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 shadow-lg shadow-purple-500/25">
+                    className="mt-4 w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-clay to-craft-orange hover:from-clay-dark hover:to-clay shadow-lg shadow-clay/25">
                     {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Starting...</> : <><Sparkles className="w-4 h-4" /> Generate 3D Model</>}
                   </button>
 
                   {creditInfo && creditInfo.totalRemaining > 0 && (
-                    <p className="text-center text-xs text-gray-500 mt-2">Uses 1 credit · {creditInfo.totalRemaining} remaining</p>
+                    <p className="text-center text-xs text-foot-text/70 mt-2">Uses 1 credit · {creditInfo.totalRemaining} remaining</p>
                   )}
 
                   {error && <p className="mt-3 text-red-400 text-xs bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
 
                   {pendingCount > 0 && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-purple-300 bg-purple-500/10 px-3 py-2 rounded-lg">
+                    <div className="mt-3 flex items-center gap-2 text-xs text-craft-orange bg-craft-orange/10 px-3 py-2 rounded-lg">
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       {pendingCount} model{pendingCount > 1 ? 's' : ''} generating — checking every 5s
                     </div>
@@ -590,19 +590,19 @@ export default function GeneratorPage() {
                     </div>
 
                     {/* Model info + order button */}
-                    <div className="bg-gray-900 rounded-2xl p-4 border border-gray-800">
+                    <div className="bg-[#33271d] rounded-2xl p-4 border border-white/10">
                       <div className="flex items-start gap-3">
                         {selectedJob.thumbnailUrl && (
-                          <img src={selectedJob.thumbnailUrl} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-gray-700" />
+                          <img src={selectedJob.thumbnailUrl} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-white/15" />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm truncate">{selectedJob.prompt}</p>
-                          <p className="text-gray-400 text-xs mt-0.5">AI-generated 3D model · Ready to print</p>
+                          <p className="text-foot-text text-xs mt-0.5">AI-generated 3D model · Ready to print</p>
                         </div>
                       </div>
                       <button
                         onClick={() => { setShowQuoteForm(v => !v); setQuoteStatus('idle'); }}
-                        className="mt-3 w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold text-sm transition-all"
+                        className="mt-3 w-full flex items-center justify-center gap-2 bg-clay hover:bg-clay-dark text-white py-3 rounded-xl font-bold text-sm transition-all"
                       >
                         <Printer className="w-4 h-4" />
                         {showQuoteForm ? 'Hide Order Form' : 'Order This as a Print'}
@@ -611,29 +611,29 @@ export default function GeneratorPage() {
 
                     {/* Inline quote form */}
                     {showQuoteForm && (
-                      <div className="bg-gray-900 rounded-2xl border border-purple-500/30 p-5">
+                      <div className="bg-[#33271d] rounded-2xl border border-craft-orange/30 p-5">
                         {quoteStatus === 'success' ? (
                           <div className="text-center py-6">
                             <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
                             <p className="font-bold text-lg">Quote Request Sent!</p>
-                            <p className="text-gray-400 text-sm mt-1">We&apos;ll email you with pricing within 24 hours.</p>
+                            <p className="text-foot-text text-sm mt-1">We&apos;ll email you with pricing within 24 hours.</p>
                             <button onClick={() => { setShowQuoteForm(false); setQuoteStatus('idle'); }}
-                              className="mt-4 text-sm text-purple-400 hover:text-purple-300">Done</button>
+                              className="mt-4 text-sm text-craft-orange hover:text-craft-orange">Done</button>
                           </div>
                         ) : (
                           <form onSubmit={handleQuoteSubmit} className="space-y-3">
                             <div className="flex items-center gap-2 mb-4">
-                              <ShoppingCart className="w-4 h-4 text-purple-400" />
+                              <ShoppingCart className="w-4 h-4 text-craft-orange" />
                               <h3 className="font-bold text-sm">Request a Print Quote</h3>
                             </div>
 
                             {/* Model reference */}
-                            <div className="flex items-center gap-2 bg-gray-800 rounded-xl p-3 border border-gray-700">
+                            <div className="flex items-center gap-2 bg-white/10 rounded-xl p-3 border border-white/15">
                               {selectedJob.thumbnailUrl && (
-                                <img src={selectedJob.thumbnailUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-gray-600" />
+                                <img src={selectedJob.thumbnailUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white/20" />
                               )}
                               <div className="min-w-0">
-                                <p className="text-xs text-gray-400">Your AI model</p>
+                                <p className="text-xs text-foot-text">Your AI model</p>
                                 <p className="text-sm font-medium truncate">{selectedJob.prompt}</p>
                               </div>
                               <CheckCircle className="w-4 h-4 text-green-400 ml-auto flex-shrink-0" />
@@ -641,40 +641,40 @@ export default function GeneratorPage() {
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-xs text-gray-400 mb-1 block">Your Name</label>
+                                <label className="text-xs text-foot-text mb-1 block">Your Name</label>
                                 <input required value={quoteForm.name} onChange={e => setQuoteForm(p => ({ ...p, name: e.target.value }))}
-                                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                  className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-craft-orange" />
                               </div>
                               <div>
-                                <label className="text-xs text-gray-400 mb-1 block">Email</label>
+                                <label className="text-xs text-foot-text mb-1 block">Email</label>
                                 <input required type="email" value={quoteForm.email} onChange={e => setQuoteForm(p => ({ ...p, email: e.target.value }))}
-                                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                  className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-craft-orange" />
                               </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <label className="text-xs text-gray-400 mb-1 block">Material</label>
+                                <label className="text-xs text-foot-text mb-1 block">Material</label>
                                 <select value={quoteForm.material} onChange={e => setQuoteForm(p => ({ ...p, material: e.target.value }))}
-                                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                  className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-craft-orange">
                                   {['PLA', 'PETG', 'TPU', 'ABS', 'Not sure'].map(m => <option key={m}>{m}</option>)}
                                 </select>
                               </div>
                               <div>
-                                <label className="text-xs text-gray-400 mb-1 block">Color</label>
+                                <label className="text-xs text-foot-text mb-1 block">Color</label>
                                 <select value={quoteForm.color} onChange={e => setQuoteForm(p => ({ ...p, color: e.target.value }))}
-                                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                  className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-craft-orange">
                                   {['Black', 'White', 'Grey', 'Red', 'Blue', 'Green', 'Orange', 'Purple', 'Any'].map(c => <option key={c}>{c}</option>)}
                                 </select>
                               </div>
                             </div>
 
                             <div>
-                              <label className="text-xs text-gray-400 mb-1 block">Extra notes (optional)</label>
+                              <label className="text-xs text-foot-text mb-1 block">Extra notes (optional)</label>
                               <textarea value={quoteForm.notes} onChange={e => setQuoteForm(p => ({ ...p, notes: e.target.value }))}
                                 placeholder="Size, quantity, special requests..."
                                 rows={2}
-                                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none" />
+                                className="w-full bg-white/10 border border-white/15 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-craft-orange resize-none" />
                             </div>
 
                             {quoteStatus === 'error' && (
@@ -687,19 +687,19 @@ export default function GeneratorPage() {
                                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</>
                                 : <><Send className="w-4 h-4" /> Send Quote Request</>}
                             </button>
-                            <p className="text-xs text-gray-500 text-center">Free quote · We reply within 24h</p>
+                            <p className="text-xs text-foot-text/70 text-center">Free quote · We reply within 24h</p>
                           </form>
                         )}
                       </div>
                     )}
                   </>
                 ) : (
-                  <div className="h-[420px] bg-gray-900 rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center p-8">
-                    <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center mb-4">
-                      <Sparkles className="w-10 h-10 text-gray-600" />
+                  <div className="h-[420px] bg-[#33271d] rounded-2xl border border-white/10 flex flex-col items-center justify-center text-center p-8">
+                    <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mb-4">
+                      <Sparkles className="w-10 h-10 text-white/20" />
                     </div>
-                    <h3 className="font-bold text-lg mb-2 text-gray-300">3D Preview will appear here</h3>
-                    <p className="text-gray-500 text-sm">Generate a model — completed models load here automatically.</p>
+                    <h3 className="font-bold text-lg mb-2 text-foot-text">3D Preview will appear here</h3>
+                    <p className="text-foot-text/70 text-sm">Generate a model — completed models load here automatically.</p>
                   </div>
                 )}
               </div>
@@ -709,12 +709,12 @@ export default function GeneratorPage() {
             {jobs.length > 0 && (
               <div className="mt-10">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold">My Generations <span className="text-gray-500 text-base font-normal">({jobs.length})</span></h2>
+                  <h2 className="text-xl font-bold">My Generations <span className="text-foot-text/70 text-base font-normal">({jobs.length})</span></h2>
                   <div className="flex items-center gap-3">
-                    <button onClick={refreshAll} className="text-xs text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
+                    <button onClick={refreshAll} className="text-xs text-foot-text hover:text-white flex items-center gap-1 transition-colors">
                       <RotateCcw className="w-3 h-3" /> Refresh
                     </button>
-                    <button onClick={clearAll} className="text-xs text-gray-500 hover:text-red-400 transition-colors">Clear all</button>
+                    <button onClick={clearAll} className="text-xs text-foot-text/70 hover:text-red-400 transition-colors">Clear all</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -722,32 +722,32 @@ export default function GeneratorPage() {
                     <div key={job.taskId}
                       onClick={() => job.status === 'done' && job.glbUrl && setSelectedJob(job)}
                       className={`relative rounded-xl overflow-hidden border transition-all ${
-                        job.status === 'done' && job.glbUrl ? 'cursor-pointer hover:border-purple-500' : 'cursor-default'
-                      } ${selectedJob?.taskId === job.taskId ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-gray-700'}`}
+                        job.status === 'done' && job.glbUrl ? 'cursor-pointer hover:border-craft-orange' : 'cursor-default'
+                      } ${selectedJob?.taskId === job.taskId ? 'border-craft-orange ring-2 ring-craft-orange/30' : 'border-white/15'}`}
                     >
-                      <div className="aspect-square bg-gray-800 relative">
+                      <div className="aspect-square bg-white/10 relative">
                         {job.thumbnailUrl ? (
                           <img src={job.thumbnailUrl} alt={job.prompt} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Sparkles className="w-8 h-8 text-gray-600" />
+                            <Sparkles className="w-8 h-8 text-white/20" />
                           </div>
                         )}
                         {job.status === 'pending' && (
                           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
-                            <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-                            <span className="text-xs text-gray-300">Pending...</span>
+                            <Loader2 className="w-6 h-6 text-craft-orange animate-spin" />
+                            <span className="text-xs text-foot-text">Pending...</span>
                             <button onClick={e => { e.stopPropagation(); checkSingleJob(job); }}
-                              className="text-[10px] text-purple-300 underline mt-1">Check now</button>
+                              className="text-[10px] text-craft-orange underline mt-1">Check now</button>
                           </div>
                         )}
                         {job.status === 'generating' && (
                           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
-                            <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
-                            <span className="text-xs text-gray-300">{job.progress}%</span>
+                            <Loader2 className="w-6 h-6 text-craft-orange animate-spin" />
+                            <span className="text-xs text-foot-text">{job.progress}%</span>
                             {job.progress >= 95 && (
                               <button onClick={e => { e.stopPropagation(); checkSingleJob(job); }}
-                                className="text-[10px] bg-purple-600/80 hover:bg-purple-600 text-white px-2 py-0.5 rounded-full">
+                                className="text-[10px] bg-clay/80 hover:bg-clay text-white px-2 py-0.5 rounded-full">
                                 Check now
                               </button>
                             )}
@@ -771,15 +771,15 @@ export default function GeneratorPage() {
                           </div>
                         )}
                       </div>
-                      <div className="p-2 bg-gray-900">
-                        <p className="text-xs text-gray-300 truncate">{job.prompt}</p>
+                      <div className="p-2 bg-[#33271d]">
+                        <p className="text-xs text-foot-text truncate">{job.prompt}</p>
                         <div className="flex items-center gap-1 mt-0.5">
                           {job.status === 'done' ? (
                             <span className="text-[10px] text-green-400">Ready</span>
                           ) : job.status === 'error' ? (
                             <span className="text-[10px] text-red-400">Failed</span>
                           ) : (
-                            <span className="text-[10px] text-purple-400 flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Processing</span>
+                            <span className="text-[10px] text-craft-orange flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> Processing</span>
                           )}
                         </div>
                       </div>

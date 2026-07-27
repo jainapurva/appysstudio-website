@@ -43,15 +43,15 @@ describe('Navbar', () => {
     render(<Navbar />);
 
     expect(screen.getByAltText("Appy's Studio")).toBeInTheDocument();
-    expect(screen.getByText('Shop')).toBeInTheDocument();
-    expect(screen.getByText('How It Works')).toBeInTheDocument();
-    expect(screen.getByText('Custom Print')).toBeInTheDocument();
-    expect(screen.getByText('Support')).toBeInTheDocument();
+    expect(screen.getByText('The Shelf')).toBeInTheDocument();
+    expect(screen.getByText('Workshop')).toBeInTheDocument();
+    expect(screen.getByText('Custom')).toBeInTheDocument();
+    expect(screen.getByText('FAQ')).toBeInTheDocument();
   });
 
   it('shows cart count badge', () => {
     render(<Navbar />);
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText(/Basket · 2/)).toBeInTheDocument();
   });
 
   it('shows Sign In button when not authenticated', () => {
