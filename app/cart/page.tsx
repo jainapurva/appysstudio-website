@@ -1,5 +1,6 @@
 'use client';
 import { useCart, CartItem, getItemUnitPrice } from '@/context/CartContext';
+import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Truck, Trash2, Plus, Minus, ShoppingBag, CreditCard, Lock, ArrowLeft } from 'lucide-react';
@@ -33,6 +34,7 @@ function buildItemName(item: CartItem): string {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, total, clearCart } = useCart();
+  const { data: session } = useSession();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -47,6 +49,14 @@ export default function CartPage() {
   const [coupon, setCoupon] = useState('');
   const [pendingOrder, setPendingOrder] = useState<string | null>(null);
   const zipDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Pre-fill from the signed-in account so the order lands in their history
+  useEffect(() => {
+    if (session?.user) {
+      setName(prev => prev || session.user?.name || '');
+      setEmail(prev => prev || session.user?.email || '');
+    }
+  }, [session]);
 
   // Fetch shipping rate when zip has 5 digits
   useEffect(() => {

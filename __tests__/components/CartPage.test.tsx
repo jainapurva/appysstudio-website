@@ -27,6 +27,7 @@ vi.mock('@/context/CartContext', () => ({
     total: mockCartItems.reduce((s, i) => s + i.product.price * i.quantity, 0),
     clearCart: vi.fn(),
   }),
+  getItemUnitPrice: (item: { product: Product }) => item.product.price,
 }));
 
 vi.mock('next-auth/react', () => ({
