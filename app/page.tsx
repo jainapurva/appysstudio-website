@@ -159,8 +159,9 @@ export default function Home() {
               <defs>
                 <path id="circ" d="M55,55 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" />
               </defs>
-              <text className="fill-sage-dark font-bold uppercase" style={{ fontSize: '10px', letterSpacing: '.14em' }}>
-                <textPath href="#circ">made with love · made to order ·&#160;</textPath>
+              <text className="fill-sage-dark font-bold uppercase" style={{ fontSize: '10px' }}>
+                <textPath href="#circ" startOffset="0" textLength="127" lengthAdjust="spacing">made with love&#160;&#160;·</textPath>
+                <textPath href="#circ" startOffset="50%" textLength="127" lengthAdjust="spacing">made to order&#160;&#160;·</textPath>
               </text>
               <text x="55" y="66" textAnchor="middle" className="fill-sage-dark" style={{ fontSize: '30px' }}>✳︎</text>
             </svg>
