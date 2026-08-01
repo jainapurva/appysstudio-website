@@ -71,20 +71,22 @@ describe('spec', () => {
     expect(sanitiseName("O'Brien")).toBe('OBRIEN');
   });
 
-  it('sizes the tray to the name and engraves once it is long enough', () => {
+  it('sizes the tray to the name', () => {
     expect(planFor('ABC').bases).toEqual([{ slots: 3, text: false }]);
-    expect(planFor('ABCD').bases).toEqual([{ slots: 4, text: true }]);
-    expect(planFor('NYESHA').bases).toEqual([{ slots: 6, text: true }]);
+    expect(planFor('NYESHA').bases).toEqual([{ slots: 6, text: false }]);
+  });
+
+  it('never engraves the tray, at any length', () => {
+    // "Our Hero" is a personal inscription from the original project and must
+    // not end up on a visitor's name plate.
+    for (const name of ['A', 'ABC', 'ABCD', 'NYESHA', 'ABCDEFGHIJ']) {
+      expect(planFor(name).bases.every((b) => !b.text), name).toBe(true);
+    }
   });
 
   it('never plans a tray bigger than the library carries', () => {
     const largest = availableBaseSizes().slice(-1)[0];
     expect(MAX_NAME_LENGTH).toBeLessThanOrEqual(largest);
-  });
-
-  it('only engraves trays the library has a fitted engraving for', () => {
-    const plan = planFor('ABCD');
-    expect(plan.bases[0].slots).toBeGreaterThanOrEqual(MIN_TEXT_SLOTS);
   });
 });
 
@@ -100,9 +102,11 @@ describe('generate', () => {
   let members: Map<string, Buffer>;
 
   beforeAll(async () => {
+    // exactly what the site asks for
+    const plan = planFor('NYESHA');
     const result = await generate({
-      letters: parseLetters('NYESHA'),
-      bases: [{ slots: 6, text: true }],
+      letters: plan.letters,
+      bases: plan.bases,
       onePlate: true,
       uuid: seqUuid(),
     });
@@ -144,7 +148,13 @@ describe('generate', () => {
     expect(settings.match(/<object id=/g)).toHaveLength(7);
     expect(settings.match(/<plate>/g)).toHaveLength(1);
     expect(settings.match(/<model_instance>/g)).toHaveLength(7);
-    expect(settings).toContain('Base 6-slot (Our Hero)');
+    expect(settings).toContain('Base 6-slot');
+  });
+
+  it('ships a tray with nothing cut into it', () => {
+    const settings = members.get('Metadata/model_settings.config')!.toString();
+    expect(settings).not.toContain('Our Hero');
+    expect(settings).not.toContain('negative_part');
   });
 
   it('matches every model_settings part id to a component objectid', () => {
@@ -166,9 +176,10 @@ describe('generate', () => {
   });
 
   it('is deterministic given the same uuid source', async () => {
+    const plan = planFor('NYESHA');
     const again = await generate({
-      letters: parseLetters('NYESHA'),
-      bases: [{ slots: 6, text: true }],
+      letters: plan.letters,
+      bases: plan.bases,
       onePlate: true,
       uuid: seqUuid(),
     });
@@ -178,14 +189,26 @@ describe('generate', () => {
   it('reports what it built', async () => {
     const r = await generate({
       letters: parseLetters('AB'),
-      bases: [{ slots: 4, text: true }],
+      bases: [{ slots: 4, text: false }],
       onePlate: true,
       uuid: seqUuid(),
     });
     expect(r.keycapCount).toBe(2);
     expect(r.plates).toEqual(['All']);
-    expect(r.bases[0]).toMatchObject({ slots: 4, text: true });
+    expect(r.bases[0]).toMatchObject({ slots: 4, text: false });
     expect(r.bases[0].length).toBeGreaterThan(70);
+  });
+
+  it('can still cut the engraving when asked directly', async () => {
+    // The capability stays for the standalone CLI; only the site declines it.
+    const r = await generate({
+      letters: ['A'],
+      bases: [{ slots: MIN_TEXT_SLOTS, text: true }],
+      uuid: seqUuid(),
+    });
+    const settings = unzip(r.file).get('Metadata/model_settings.config')!.toString();
+    expect(settings).toContain('Our Hero');
+    expect(settings).toContain('negative_part');
   });
 
   it('carries every letter of the alphabet', async () => {

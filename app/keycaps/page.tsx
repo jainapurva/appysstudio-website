@@ -77,8 +77,7 @@ export default function KeycapsPage() {
           <li className="flex gap-3">
             <Boxes className="w-4 h-4 mt-1 shrink-0 text-clay" aria-hidden />
             <span>
-              Names of four letters or more get &ldquo;Our Hero&rdquo; engraved into the
-              underside of the tray.
+              The tray comes plain, with one slot per letter — nothing engraved on it.
             </span>
           </li>
         </ul>

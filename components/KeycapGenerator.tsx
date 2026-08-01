@@ -19,11 +19,9 @@ export default function KeycapGenerator() {
     ? `That is ${name.length} letters — the tray holds ${MAX_NAME_LENGTH}.`
     : badChars
       ? 'Letters A–Z only, for now.'
-      : name.length >= 4
-        ? `${name.length} keycaps on a ${name.length}-slot tray, “Our Hero” engraved underneath.`
-        : name.length > 0
-          ? `${name.length} keycap${name.length > 1 ? 's' : ''} on a ${name.length}-slot tray.`
-          : 'Type a name to see what you get.';
+      : name.length > 0
+        ? `${name.length} keycap${name.length > 1 ? 's' : ''} on a ${name.length}-slot tray.`
+        : 'Type a name to see what you get.';
 
   async function download() {
     if (!ready || busy) return;

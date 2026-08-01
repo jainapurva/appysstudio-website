@@ -20,12 +20,14 @@ export interface Plan {
 }
 
 /**
- * One keycap per letter, on a single tray sized to the name, with "Our Hero"
- * engraved underneath whenever the tray is long enough to carry it.
+ * One keycap per letter, on a single plain tray sized to the name.
+ *
+ * The tray is deliberately blank. The library also carries an "Our Hero"
+ * engraving, but that is a personal inscription from the original project and
+ * has no business on a stranger's name plate — the site never asks for it.
  */
 export function planFor(name: string): Plan {
   const letters = name.split('');
   const slots = Math.max(1, Math.min(MAX_NAME_LENGTH, letters.length));
-  // The engraving needs a 4-slot tray or longer; shorter names get a plain one.
-  return { letters, bases: [{ slots, text: slots >= 4 }] };
+  return { letters, bases: [{ slots, text: false }] };
 }

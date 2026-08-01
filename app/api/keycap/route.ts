@@ -21,8 +21,6 @@ const WINDOW_MS = 10 * 60 * 1000;
 
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get('name') ?? '';
-  const engrave = req.nextUrl.searchParams.get('engrave') !== '0';
-
   const name = sanitiseName(raw);
   if (!name) {
     return NextResponse.json({ error: 'Enter a name.' }, { status: 400 });
@@ -47,12 +45,15 @@ export async function GET(req: NextRequest) {
 
   try {
     const plan = planFor(name);
-    const bases = engrave ? plan.bases : plan.bases.map((b) => ({ ...b, text: false }));
-    const result = await generate({ letters: plan.letters, bases, onePlate: true });
+    const result = await generate({
+      letters: plan.letters,
+      bases: plan.bases,
+      onePlate: true,
+    });
 
     trackEvent({
       type: 'keycap_generated',
-      data: { name, letters: plan.letters.length, engraved: bases[0].text ? 1 : 0 },
+      data: { name, letters: plan.letters.length },
       ip: clientIp(req.headers),
       userAgent: req.headers.get('user-agent') ?? undefined,
     });
