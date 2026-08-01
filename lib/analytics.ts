@@ -9,7 +9,8 @@ export type EventType =
   | 'add_to_cart'
   | 'checkout_started'
   | 'order_completed'
-  | 'quote_submitted';
+  | 'quote_submitted'
+  | 'keycap_generated';
 
 export interface AnalyticsEvent {
   id: string;

@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 const NAV_LINKS = [
   { label: 'The Shelf', href: '/#shop' },
   { label: '✨ AI 3D Generator', href: '/3d-generator', badge: 'New' },
+  { label: 'Name Keycaps', href: '/keycaps', badge: 'Free' },
   { label: 'Workshop', href: '/workshop', badge: 'Aug 22' },
   { label: 'Custom', href: '/#custom' },
   { label: 'Robotics', href: '/robotics', badge: 'Soon' },
