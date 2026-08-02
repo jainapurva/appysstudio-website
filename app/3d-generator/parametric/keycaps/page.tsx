@@ -7,12 +7,12 @@ export const metadata = {
   title: "Name Keycaps — free 3D print file | Appy's Studio",
   description:
     'Type a name, get a ready-to-print .3mf of keycap letters and a matching tray. Free, instant, made for Bambu Studio.',
-  alternates: { canonical: 'https://appysstudio.com/keycaps' },
+  alternates: { canonical: 'https://appysstudio.com/3d-generator/parametric/keycaps' },
   openGraph: {
     title: 'Name Keycaps — free 3D print file',
     description:
       'Type a name and download a ready-to-slice .3mf: one keycap per letter, plus a tray sized to fit.',
-    url: 'https://appysstudio.com/keycaps',
+    url: 'https://appysstudio.com/3d-generator/parametric/keycaps',
     type: 'website',
   },
 };
@@ -26,6 +26,18 @@ const STEPS = [
 export default function KeycapsPage() {
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+      <nav className="mb-6 text-sm text-ink2">
+        <Link href="/3d-generator" className="hover:text-clay-dark">
+          3D Generator
+        </Link>
+        <span className="mx-2 text-ink2/50">/</span>
+        <Link href="/3d-generator/parametric" className="hover:text-clay-dark">
+          Parametric
+        </Link>
+        <span className="mx-2 text-ink2/50">/</span>
+        <span className="text-ink">Name Keycaps</span>
+      </nav>
+
       <div className="kicker mb-6">Free download</div>
 
       <h1 className="font-display text-4xl sm:text-6xl leading-[1.05] mb-5">

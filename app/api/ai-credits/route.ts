@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       },
     },
     checkoutOptions: {
-      redirectUrl: `${BASE_URL}/3d-generator?credits_purchased=1&pack=${pack.id}`,
+      redirectUrl: `${BASE_URL}/3d-generator/ai?credits_purchased=1&pack=${pack.id}`,
       merchantSupportEmail: process.env.GMAIL_USER || '',
     },
     prePopulatedData: {

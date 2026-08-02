@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/keycap': ['./assets/keycaps/**'],
   },
+  async redirects() {
+    return [
+      // /keycaps shipped on its own before the generators were grouped under
+      // one nav entry; keep the old link working.
+      {
+        source: '/keycaps',
+        destination: '/3d-generator/parametric/keycaps',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

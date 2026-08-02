@@ -8,8 +8,9 @@ import { useState, useRef, useEffect } from 'react';
 
 const NAV_LINKS = [
   { label: 'The Shelf', href: '/#shop' },
-  { label: '✨ AI 3D Generator', href: '/3d-generator', badge: 'New' },
-  { label: 'Name Keycaps', href: '/keycaps', badge: 'Free' },
+  // One entry for every generator — AI and parametric both live under it, so
+  // adding a parametric product never adds a nav item.
+  { label: '✨ 3D Generator', href: '/3d-generator', badge: 'New' },
   { label: 'Workshop', href: '/workshop', badge: 'Aug 22' },
   { label: 'Custom', href: '/#custom' },
   { label: 'Robotics', href: '/robotics', badge: 'Soon' },
