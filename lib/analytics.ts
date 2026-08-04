@@ -10,7 +10,9 @@ export type EventType =
   | 'checkout_started'
   | 'order_completed'
   | 'quote_submitted'
-  | 'keycap_generated';
+  | 'keycap_generated'
+  | 'parametric_generated'
+  | 'paint_kit_generated';
 
 export interface AnalyticsEvent {
   id: string;

@@ -7,7 +7,19 @@ const nextConfig: NextConfig = {
   // the standalone build ships without it.
   outputFileTracingIncludes: {
     '/api/keycap': ['./assets/keycaps/**'],
+    // The .scad sources and the render worker are both resolved by path at
+    // runtime rather than imported, so tracing cannot find either on its own.
+    // openscad-wasm is a third case and is NOT listed here: tracing includes
+    // skip node_modules paths, so it is copied by scripts/bundle-openscad.mjs
+    // as a postbuild step instead.
+    '/api/parametric/[slug]': [
+      './assets/parametric/**',
+      './lib/parametric/render.worker.mjs',
+    ],
+    '/api/paint-kit': ['./lib/parametric/render.worker.mjs'],
   },
+  // 13MB of embedded wasm has no business going through the bundler.
+  serverExternalPackages: ['openscad-wasm'],
   async redirects() {
     return [
       // /keycaps shipped on its own before the generators were grouped under
