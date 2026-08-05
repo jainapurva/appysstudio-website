@@ -2,12 +2,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ParametricStudio from '@/components/ParametricStudio';
-import { PARAMETRIC_MODELS, findModel } from '@/lib/parametric/models';
+import { LISTED_MODELS, findListedModel } from '@/lib/parametric/models';
 
 // One page for every model in the manifest. Adding a .scad file and an entry
 // gives it a page here — there is nothing per-model to write.
 export function generateStaticParams() {
-  return PARAMETRIC_MODELS.map((model) => ({ slug: model.slug }));
+  return LISTED_MODELS.map((model) => ({ slug: model.slug }));
 }
 
 export async function generateMetadata({
@@ -16,7 +16,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const model = findModel(slug);
+  const model = findListedModel(slug);
   if (!model) return {};
 
   const url = `https://appysstudio.com/3d-generator/parametric/${model.slug}`;
@@ -39,7 +39,7 @@ export default async function ParametricModelPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const model = findModel(slug);
+  const model = findListedModel(slug);
   if (!model) notFound();
 
   return (

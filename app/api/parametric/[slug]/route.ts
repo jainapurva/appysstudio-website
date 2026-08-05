@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findModel } from '@/lib/parametric/models';
+import { findListedModel } from '@/lib/parametric/models';
 import { resolveParams, toDefines, describeValues } from '@/lib/parametric/spec';
 import { loadScad, renderScad, RenderBusyError } from '@/lib/parametric/render';
 import { parseBinaryStl, meshSize, toThreeMf } from '@/lib/parametric/mesh';
@@ -18,7 +18,7 @@ const WINDOW_MS = 10 * 60 * 1000;
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
-  const model = findModel(slug);
+  const model = findListedModel(slug);
   if (!model) {
     return NextResponse.json({ error: 'No such model.' }, { status: 404 });
   }

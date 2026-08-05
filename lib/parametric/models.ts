@@ -16,6 +16,21 @@ import { assertValidParamDefs, type ParamDef } from './spec';
 
 export interface ParametricModel {
   slug: string;
+  /**
+   * Whether a physical test print has confirmed this one actually works.
+   *
+   * Apurva's rule, 2026-08-04: nothing unverified goes on the site. Geometry
+   * checks settle most of it — watertight, right dimensions, holds water,
+   * tessellates — but some properties only a printer can answer. The
+   * articulated chain is the case in point: the mesh says four separate bodies
+   * at exactly 0.350mm of clearance, and whether those joints actually come
+   * free off the plate is not a question a mesh can answer.
+   *
+   * Unverified models keep their .scad and their tests. They just are not
+   * reachable: no card, no page, and the endpoint 404s. Flip this to true once
+   * one has been printed.
+   */
+  verified: boolean;
   /** File under assets/parametric. */
   file: string;
   name: string;
@@ -34,6 +49,7 @@ export interface ParametricModel {
 export const PARAMETRIC_MODELS: ParametricModel[] = [
   {
     slug: 'twisty-vase',
+    verified: true,
     file: 'twisty_vase.scad',
     name: 'Twisty Vase & Planter',
     blurb:
@@ -59,6 +75,7 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
   },
   {
     slug: 'spinning-top',
+    verified: true,
     file: 'spinning_top.scad',
     name: 'Spinning Top',
     blurb:
@@ -91,6 +108,7 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
   },
   {
     slug: 'cookie-cutter',
+    verified: true,
     file: 'cookie_cutter.scad',
     name: 'Cookie Cutter & Clay Stamp',
     blurb:
@@ -131,6 +149,8 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
   },
   {
     slug: 'finger-extensions',
+    // Needs one test print to confirm the hinge frees. Off the site until then.
+    verified: false,
     file: 'finger_extensions.scad',
     name: 'Articulated Finger Extensions',
     blurb:
@@ -156,6 +176,7 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
   },
   {
     slug: 'stackable-box',
+    verified: true,
     file: 'stackable_box.scad',
     name: 'Stackable Organizer Box',
     blurb:
@@ -181,6 +202,7 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
   },
   {
     slug: 'hex-organizer',
+    verified: true,
     file: 'hex_organizer.scad',
     name: 'Hex Desk Organizer',
     blurb:
@@ -222,6 +244,20 @@ for (const model of PARAMETRIC_MODELS) {
   assertValidParamDefs(model.params, model.slug);
 }
 
+/** Everything in the catalogue, verified or not. For tests and tooling. */
 export function findModel(slug: string): ParametricModel | undefined {
   return PARAMETRIC_MODELS.find((m) => m.slug === slug);
+}
+
+/**
+ * The models visitors can actually reach.
+ *
+ * Every public surface — the catalogue cards, the generated pages, the download
+ * endpoint — goes through this rather than PARAMETRIC_MODELS, so an unverified
+ * model cannot appear anywhere by being forgotten about in one of them.
+ */
+export const LISTED_MODELS: ParametricModel[] = PARAMETRIC_MODELS.filter((m) => m.verified);
+
+export function findListedModel(slug: string): ParametricModel | undefined {
+  return LISTED_MODELS.find((m) => m.slug === slug);
 }

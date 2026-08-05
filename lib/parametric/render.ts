@@ -8,6 +8,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'module';
+import os from 'node:os';
 
 /**
  * worker_threads, fetched out of the bundler's sight.
@@ -51,18 +52,35 @@ export const RENDER_TIMEOUT_MS = 20_000;
 /**
  * How many renders may run at once, and how many may wait.
  *
- * Not a tuning knob — a memory bound. A single worker peaks around 215MB of RSS
- * on the twisty vase (measured: four at once took the process from 38MB to
- * 901MB). Previews fire on page load, so four open tabs is an ordinary thing a
- * visitor does, and this box is shared with other services. Unbounded, that is
- * an out-of-memory kill, not a slow page.
+ * Not a tuning knob — a memory bound, sized to the machine it lands on. A single
+ * worker spikes RSS by ~200MB; four at once took a process from 38MB to 901MB.
+ * Previews fire on page load, so four open tabs is an ordinary thing a visitor
+ * does. Unbounded, that is an out-of-memory kill, not a slow page.
  *
- * Two at a time keeps the worst case near 430MB. Queue beyond that, and shed
- * load rather than pile it up: a visitor told "busy, try again" is better off
- * than one holding a connection open behind a queue that cannot drain.
+ * Beyond the cap, queue a little and then shed: a visitor told "busy, try again"
+ * is better off than one holding a connection open behind a queue that cannot
+ * drain inside the timeout.
  */
-const MAX_CONCURRENT = Math.max(1, Number(process.env.PARAMETRIC_MAX_CONCURRENT ?? 2));
-const MAX_QUEUED = Math.max(0, Number(process.env.PARAMETRIC_MAX_QUEUED ?? 6));
+function defaultConcurrency(): number {
+  const override = Number(process.env.PARAMETRIC_MAX_CONCURRENT);
+  if (Number.isFinite(override) && override >= 1) return Math.floor(override);
+
+  // One render spikes RSS by roughly 200MB (measured: 60MB baseline -> 257MB
+  // mid-render -> back to 39MB once idle, so it is a spike rather than a leak).
+  // Budget a slot per 700MB of total RAM and never fewer than one.
+  //
+  // Production is a t3.micro: 914MB total, ~270MB available, and 1.2GB of its
+  // 2GB swap already in use because the box is shared with several other
+  // services. That arithmetic gives exactly one slot, which is the honest
+  // answer — two concurrent renders there would go straight into swap.
+  const totalMb = os.totalmem() / (1024 * 1024);
+  return Math.min(4, Math.max(1, Math.floor(totalMb / 700)));
+}
+
+const MAX_CONCURRENT = defaultConcurrency();
+// With one slot, six queued means the last one waits about twelve seconds.
+// Four keeps the worst wait under the queue timeout with room to spare.
+const MAX_QUEUED = Math.max(0, Number(process.env.PARAMETRIC_MAX_QUEUED ?? 4));
 const QUEUE_TIMEOUT_MS = 15_000;
 
 /** Thrown when the queue is full or a wait times out; the route maps it to 503. */
@@ -109,9 +127,20 @@ async function takeSlot(): Promise<void> {
   });
 }
 
-/** Test hook — reports the live counters. */
-export function renderQueueState(): { active: number; waiting: number } {
-  return { active, waiting: waiting.length };
+/** Live counters plus the limits they are held to. The limits are derived from
+ * the machine, so tests assert against these rather than a hardcoded number. */
+export function renderQueueState(): {
+  active: number;
+  waiting: number;
+  maxConcurrent: number;
+  maxQueued: number;
+} {
+  return {
+    active,
+    waiting: waiting.length,
+    maxConcurrent: MAX_CONCURRENT,
+    maxQueued: MAX_QUEUED,
+  };
 }
 
 const workerPath = () => path.join(process.cwd(), 'lib', 'parametric', 'render.worker.mjs');

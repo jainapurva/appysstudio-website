@@ -6,7 +6,13 @@ import {
   toDefines,
   type ParamDef,
 } from '@/lib/parametric/spec';
-import { PARAMETRIC_MODELS, findModel } from '@/lib/parametric/models';
+import {
+  PARAMETRIC_MODELS,
+  LISTED_MODELS,
+  findModel,
+  findListedModel,
+} from '@/lib/parametric/models';
+import { PARAMETRIC_GENERATORS } from '@/lib/generators';
 
 const DEFS: ParamDef[] = [
   { kind: 'number', key: 'width', label: 'Width', unit: 'mm', min: 10, max: 100, step: 5, default: 50 },
@@ -141,5 +147,47 @@ describe('the shipped manifest', () => {
   it('finds models by slug and nothing else', () => {
     expect(findModel('twisty-vase')?.name).toBe('Twisty Vase & Planter');
     expect(findModel('../../etc/passwd')).toBeUndefined();
+  });
+});
+
+describe('unverified models stay off the site', () => {
+  // Apurva's rule, 2026-08-04: nothing that has not been test printed is
+  // reachable. Geometry settles most correctness, but not everything — the
+  // articulated chain measures as four separate bodies at exactly 0.350mm of
+  // clearance, and whether those joints come free off the plate is a question
+  // for a printer, not a mesh.
+  it('keeps the articulated chain in the catalogue but not on the site', () => {
+    expect(findModel('finger-extensions')).toBeDefined();
+    expect(findModel('finger-extensions')?.verified).toBe(false);
+    expect(findListedModel('finger-extensions')).toBeUndefined();
+    expect(LISTED_MODELS.some((m) => m.slug === 'finger-extensions')).toBe(false);
+  });
+
+  it('lists every verified model and nothing else', () => {
+    expect(LISTED_MODELS.map((m) => m.slug).sort()).toEqual(
+      PARAMETRIC_MODELS.filter((m) => m.verified)
+        .map((m) => m.slug)
+        .sort()
+    );
+    for (const model of LISTED_MODELS) expect(model.verified).toBe(true);
+  });
+
+  it('shows a card only for models that are listed', () => {
+    // The catalogue is what the hub and the index render from, so an
+    // unverified model appearing here would put it back on the site even
+    // though its page and endpoint are gone.
+    const cards = PARAMETRIC_GENERATORS.map((g) => g.slug);
+    for (const model of PARAMETRIC_MODELS) {
+      if (model.verified) expect(cards).toContain(model.slug);
+      else expect(cards).not.toContain(model.slug);
+    }
+  });
+
+  it('still covers unverified models with the geometry tests', () => {
+    // The point is that the work is kept, not thrown away — flipping the flag
+    // after a test print should be the only change needed.
+    for (const model of PARAMETRIC_MODELS) {
+      expect(model.file, model.slug).toMatch(/^[a-z0-9_]+\.scad$/);
+    }
   });
 });

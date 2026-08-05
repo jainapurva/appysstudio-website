@@ -419,6 +419,10 @@ describe('render concurrency is bounded', () => {
     'never runs more than the cap at once, however many arrive together',
     async () => {
       const source = await loadScad('stackable_box.scad');
+      // The cap is derived from the machine's RAM — 1 on the t3.micro in
+      // production, more on a development box — so assert the invariant rather
+      // than a number that only holds on one of them.
+      const { maxConcurrent, maxQueued } = renderQueueState();
       let peakActive = 0;
 
       const sampler = setInterval(() => {
@@ -426,18 +430,18 @@ describe('render concurrency is bounded', () => {
       }, 5);
 
       const results = await Promise.allSettled(
-        Array.from({ length: 6 }, () => renderScad(source, []))
+        Array.from({ length: maxConcurrent + maxQueued }, () => renderScad(source, []))
       );
       clearInterval(sampler);
 
       expect(peakActive).toBeGreaterThan(0);
-      expect(peakActive).toBeLessThanOrEqual(2);
+      expect(peakActive).toBeLessThanOrEqual(maxConcurrent);
 
-      // Six is within the cap plus the queue, so all of them should land.
+      // Exactly the cap plus the queue, so every one of them should land.
       for (const result of results) expect(result.status).toBe('fulfilled');
       // And the counters must come back to rest, or the cap leaks a slot per
       // request and the generator wedges itself shut after a few dozen.
-      expect(renderQueueState()).toEqual({ active: 0, waiting: 0 });
+      expect(renderQueueState()).toMatchObject({ active: 0, waiting: 0 });
     },
     RENDER_BUDGET_MS * 4
   );
@@ -446,9 +450,11 @@ describe('render concurrency is bounded', () => {
     'sheds load rather than queueing without limit',
     async () => {
       const source = await loadScad('stackable_box.scad');
-      // Cap is 2 and the queue holds 6, so the ninth has nowhere to go.
+      // One more than the cap plus the queue can hold, so at least one arrival
+      // has nowhere to go.
+      const { maxConcurrent, maxQueued } = renderQueueState();
       const results = await Promise.allSettled(
-        Array.from({ length: 9 }, () => renderScad(source, []))
+        Array.from({ length: maxConcurrent + maxQueued + 3 }, () => renderScad(source, []))
       );
 
       const refused = results.filter(
@@ -459,7 +465,7 @@ describe('render concurrency is bounded', () => {
       for (const result of results) {
         if (result.status === 'rejected') expect(result.reason).toBeInstanceOf(RenderBusyError);
       }
-      expect(renderQueueState()).toEqual({ active: 0, waiting: 0 });
+      expect(renderQueueState()).toMatchObject({ active: 0, waiting: 0 });
     },
     RENDER_BUDGET_MS * 5
   );

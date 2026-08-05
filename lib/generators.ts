@@ -6,7 +6,7 @@
  * on its own — no new nav item, no new landing page to wire up.
  */
 
-import { PARAMETRIC_MODELS } from '@/lib/parametric/models';
+import { LISTED_MODELS } from '@/lib/parametric/models';
 
 export interface Generator {
   slug: string;
@@ -61,7 +61,7 @@ const PAINT_KIT: Generator = {
 export const PARAMETRIC_GENERATORS: Generator[] = [
   KEYCAPS,
   PAINT_KIT,
-  ...PARAMETRIC_MODELS.map((model) => ({
+  ...LISTED_MODELS.map((model) => ({
     slug: model.slug,
     href: `/3d-generator/parametric/${model.slug}`,
     name: model.name,
