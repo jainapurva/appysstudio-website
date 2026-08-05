@@ -128,7 +128,6 @@ export default function PaintKitStudio() {
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
 
-    const half = size / 2;
     const scale = (Math.min(width, height) * 0.92) / size;
     const toCanvas = ([x, y]: [number, number]): [number, number] => [
       width / 2 + x * scale,
@@ -158,7 +157,6 @@ export default function PaintKitStudio() {
     path(traced.lines);
     ctx.fill('evenodd');
 
-    void half;
   }, [traced, size]);
 
   // ------------------------------------------------------------ build model
@@ -174,6 +172,7 @@ export default function PaintKitStudio() {
           baseHeight,
           lineHeight,
           format: forPreview ? 'stl' : format,
+          preview: forPreview,
         }),
       });
       if (!res.ok) {

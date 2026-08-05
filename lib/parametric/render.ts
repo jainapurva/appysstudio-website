@@ -48,6 +48,72 @@ function workerThreads(): typeof import('worker_threads') {
  * that a runaway render is capped. Every model is checked against this in tests. */
 export const RENDER_TIMEOUT_MS = 20_000;
 
+/**
+ * How many renders may run at once, and how many may wait.
+ *
+ * Not a tuning knob — a memory bound. A single worker peaks around 215MB of RSS
+ * on the twisty vase (measured: four at once took the process from 38MB to
+ * 901MB). Previews fire on page load, so four open tabs is an ordinary thing a
+ * visitor does, and this box is shared with other services. Unbounded, that is
+ * an out-of-memory kill, not a slow page.
+ *
+ * Two at a time keeps the worst case near 430MB. Queue beyond that, and shed
+ * load rather than pile it up: a visitor told "busy, try again" is better off
+ * than one holding a connection open behind a queue that cannot drain.
+ */
+const MAX_CONCURRENT = Math.max(1, Number(process.env.PARAMETRIC_MAX_CONCURRENT ?? 2));
+const MAX_QUEUED = Math.max(0, Number(process.env.PARAMETRIC_MAX_QUEUED ?? 6));
+const QUEUE_TIMEOUT_MS = 15_000;
+
+/** Thrown when the queue is full or a wait times out; the route maps it to 503. */
+export class RenderBusyError extends Error {
+  constructor() {
+    super('The generator is busy right now. Try again in a moment.');
+    this.name = 'RenderBusyError';
+  }
+}
+
+let active = 0;
+const waiting: Array<() => void> = [];
+
+function releaseSlot(): void {
+  const next = waiting.shift();
+  if (next) {
+    // Hand the slot straight over rather than decrementing first, so a burst
+    // of callers resuming from the queue cannot briefly exceed the cap.
+    next();
+    return;
+  }
+  active--;
+}
+
+async function takeSlot(): Promise<void> {
+  if (active < MAX_CONCURRENT) {
+    active++;
+    return;
+  }
+  if (waiting.length >= MAX_QUEUED) throw new RenderBusyError();
+
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const at = waiting.indexOf(wake);
+      if (at >= 0) waiting.splice(at, 1);
+      reject(new RenderBusyError());
+    }, QUEUE_TIMEOUT_MS);
+
+    const wake = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    waiting.push(wake);
+  });
+}
+
+/** Test hook — reports the live counters. */
+export function renderQueueState(): { active: number; waiting: number } {
+  return { active, waiting: waiting.length };
+}
+
 const workerPath = () => path.join(process.cwd(), 'lib', 'parametric', 'render.worker.mjs');
 const scadPath = (file: string) => path.join(process.cwd(), 'assets', 'parametric', file);
 
@@ -83,6 +149,15 @@ export interface RenderResult {
  * rebuilt from the manifest rather than from caller input.
  */
 export async function renderScad(source: string, defines: string[]): Promise<RenderResult> {
+  await takeSlot();
+  try {
+    return await runRender(source, defines);
+  } finally {
+    releaseSlot();
+  }
+}
+
+function runRender(source: string, defines: string[]): Promise<RenderResult> {
   const started = Date.now();
   const { Worker } = workerThreads();
 

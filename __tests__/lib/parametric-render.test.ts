@@ -2,7 +2,13 @@
 import { describe, it, expect } from 'vitest';
 import { PARAMETRIC_MODELS, findModel } from '@/lib/parametric/models';
 import { resolveParams, toDefines, type ParamValues } from '@/lib/parametric/spec';
-import { loadScad, renderScad, RENDER_TIMEOUT_MS } from '@/lib/parametric/render';
+import {
+  loadScad,
+  renderScad,
+  renderQueueState,
+  RenderBusyError,
+  RENDER_TIMEOUT_MS,
+} from '@/lib/parametric/render';
 import { parseBinaryStl, meshSize, toThreeMf } from '@/lib/parametric/mesh';
 import {
   bounds,
@@ -402,4 +408,59 @@ describe('test assumptions', () => {
       expect(Object.keys(values as ParamValues)).toHaveLength(model.params.length);
     }
   });
+});
+
+describe('render concurrency is bounded', () => {
+  // Each worker peaks around 215MB of RSS. Four at once took a process from
+  // 38MB to 901MB during development, and previews fire on page load — so four
+  // open tabs is an ordinary thing a visitor does. Unbounded, that is an
+  // out-of-memory kill on a shared box, not a slow page.
+  it(
+    'never runs more than the cap at once, however many arrive together',
+    async () => {
+      const source = await loadScad('stackable_box.scad');
+      let peakActive = 0;
+
+      const sampler = setInterval(() => {
+        peakActive = Math.max(peakActive, renderQueueState().active);
+      }, 5);
+
+      const results = await Promise.allSettled(
+        Array.from({ length: 6 }, () => renderScad(source, []))
+      );
+      clearInterval(sampler);
+
+      expect(peakActive).toBeGreaterThan(0);
+      expect(peakActive).toBeLessThanOrEqual(2);
+
+      // Six is within the cap plus the queue, so all of them should land.
+      for (const result of results) expect(result.status).toBe('fulfilled');
+      // And the counters must come back to rest, or the cap leaks a slot per
+      // request and the generator wedges itself shut after a few dozen.
+      expect(renderQueueState()).toEqual({ active: 0, waiting: 0 });
+    },
+    RENDER_BUDGET_MS * 4
+  );
+
+  it(
+    'sheds load rather than queueing without limit',
+    async () => {
+      const source = await loadScad('stackable_box.scad');
+      // Cap is 2 and the queue holds 6, so the ninth has nowhere to go.
+      const results = await Promise.allSettled(
+        Array.from({ length: 9 }, () => renderScad(source, []))
+      );
+
+      const refused = results.filter(
+        (r) => r.status === 'rejected' && r.reason instanceof RenderBusyError
+      );
+      expect(refused.length).toBeGreaterThan(0);
+      // Everything that was not refused still has to succeed.
+      for (const result of results) {
+        if (result.status === 'rejected') expect(result.reason).toBeInstanceOf(RenderBusyError);
+      }
+      expect(renderQueueState()).toEqual({ active: 0, waiting: 0 });
+    },
+    RENDER_BUDGET_MS * 5
+  );
 });

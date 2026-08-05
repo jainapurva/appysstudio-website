@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { renderScad } from '@/lib/parametric/render';
+import { renderScad, RenderBusyError } from '@/lib/parametric/render';
 import { parseBinaryStl, meshSize, toThreeMf, type Mesh } from '@/lib/parametric/mesh';
 import { clientIp, rateLimit } from '@/lib/keycaps/ratelimit';
 import { trackEvent } from '@/lib/analytics';
@@ -25,6 +25,7 @@ interface Body {
   lineHeight?: unknown;
   hanger?: unknown;
   format?: unknown;
+  preview?: unknown;
 }
 
 /** Coordinates arrive from a browser, so nothing is trusted until it is a finite number. */
@@ -149,6 +150,8 @@ export async function POST(req: NextRequest) {
   const baseHeight = clampNumber(body.baseHeight, 1, 8, 2.4);
   const lineHeight = clampNumber(body.lineHeight, 0.2, 4, 0.8);
   const format = body.format === '3mf' ? '3mf' : 'stl';
+  // Set by the studio's live preview; a download never sets it.
+  const preview = body.preview === true;
 
   try {
     // Base and outline are rendered separately so the 3MF can carry them as two
@@ -181,12 +184,16 @@ export async function POST(req: NextRequest) {
     }
 
     const [sx, sy, sz] = meshSize(baseMesh);
-    trackEvent({
-      type: 'paint_kit_generated',
-      data: { format, contours: base.length + lines.length },
-      ip: clientIp(req.headers),
-      userAgent: req.headers.get('user-agent') ?? undefined,
-    });
+    // Previews stay out of analytics — see the note in the parametric route.
+    // This one re-renders every time a slider moves, so it would be worse.
+    if (!preview) {
+      trackEvent({
+        type: 'paint_kit_generated',
+        data: { format, contours: base.length + lines.length },
+        ip: clientIp(req.headers),
+        userAgent: req.headers.get('user-agent') ?? undefined,
+      });
+    }
 
     return new NextResponse(new Uint8Array(payload), {
       status: 200,
@@ -197,10 +204,19 @@ export async function POST(req: NextRequest) {
             : 'model/stl',
         'Content-Length': String(payload.length),
         'Content-Disposition': `attachment; filename="AppysStudio-paint-kit.${format}"`,
-        'X-Model-Size': [sx, sy, sz + lineHeight].map((n) => n.toFixed(1)).join('x'),
+        // sz already includes the raised outline when there is one.
+        'X-Model-Size': [sx, sy, lineMesh ? sz + lineHeight : sz]
+          .map((n) => n.toFixed(1))
+          .join('x'),
       },
     });
   } catch (err) {
+    if (err instanceof RenderBusyError) {
+      return NextResponse.json(
+        { error: err.message },
+        { status: 503, headers: { 'Retry-After': '5' } }
+      );
+    }
     const message = err instanceof Error ? err.message : 'Could not build that one.';
     console.error('paint kit failed:', err);
     const known = /too long|empty model|too much detail|OpenSCAD/i.test(message);

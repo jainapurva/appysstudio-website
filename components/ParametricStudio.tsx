@@ -55,7 +55,7 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
     let cancelled = false;
 
     setBusy(true);
-    fetch(`/api/parametric/${slug}?${query}`, { signal: controller.signal })
+    fetch(`/api/parametric/${slug}?${query}&preview=1`, { signal: controller.signal })
       .then(async (res) => {
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findModel } from '@/lib/parametric/models';
 import { resolveParams, toDefines, describeValues } from '@/lib/parametric/spec';
-import { loadScad, renderScad } from '@/lib/parametric/render';
+import { loadScad, renderScad, RenderBusyError } from '@/lib/parametric/render';
 import { parseBinaryStl, meshSize, toThreeMf } from '@/lib/parametric/mesh';
 import { clientIp, rateLimit } from '@/lib/keycaps/ratelimit';
 import { trackEvent } from '@/lib/analytics';
@@ -35,6 +35,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   }
 
   const format = req.nextUrl.searchParams.get('format') === '3mf' ? '3mf' : 'stl';
+  // The customiser marks its preview fetches so they can be kept out of
+  // analytics; a download never sets it.
+  const preview = req.nextUrl.searchParams.get('preview') === '1';
 
   const limit = rateLimit(`parametric:${clientIp(req.headers)}`, LIMIT, WINDOW_MS);
   if (!limit.ok) {
@@ -55,12 +58,20 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     const suffix = describeValues(model.params, values);
     const filename = `AppysStudio-${model.slug}-${suffix}.${format}`.replace(/-+\./, '.');
 
-    trackEvent({
-      type: 'parametric_generated',
-      data: { slug: model.slug, format, ms, triangles: mesh.triangleCount },
-      ip: clientIp(req.headers),
-      userAgent: req.headers.get('user-agent') ?? undefined,
-    });
+    // Previews are deliberately not tracked. trackEvent reads, parses,
+    // re-serialises and rewrites the whole events file synchronously on the
+    // request thread — 27ms once it reaches its 10,000-event cap (2.6MB). The
+    // customiser fires a render every time a slider settles, so tracking those
+    // would put that back on the event loop dozens of times per visitor and
+    // undo the point of rendering in a worker. A download is the real signal.
+    if (!preview) {
+      trackEvent({
+        type: 'parametric_generated',
+        data: { slug: model.slug, format, ms, triangles: mesh.triangleCount },
+        ip: clientIp(req.headers),
+        userAgent: req.headers.get('user-agent') ?? undefined,
+      });
+    }
 
     return new NextResponse(new Uint8Array(body), {
       status: 200,
@@ -81,6 +92,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
       },
     });
   } catch (err) {
+    if (err instanceof RenderBusyError) {
+      return NextResponse.json(
+        { error: err.message },
+        { status: 503, headers: { 'Retry-After': '5' } }
+      );
+    }
     const message = err instanceof Error ? err.message : 'Could not build that one.';
     console.error(`parametric ${slug} failed:`, err);
     // A timeout or a SCAD error is worth telling the visitor about, because
