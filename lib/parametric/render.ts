@@ -1,8 +1,10 @@
 /**
  * Render a .scad file to a mesh.
  *
- * The work happens in a worker (see render.worker.mjs) with a hard timeout, so
- * a pathological parameter combination costs one worker rather than the site.
+ * The work happens in a forked child (see render.child.mjs) with a hard
+ * timeout, so a pathological parameter combination costs one process rather
+ * than the site — and its ~200MB of wasm heap is returned to the OS when it
+ * exits, which a worker thread's would not be.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -11,18 +13,18 @@ import { createRequire } from 'module';
 import os from 'node:os';
 
 /**
- * worker_threads, fetched out of the bundler's sight.
+ * child_process, fetched out of the bundler's sight.
  *
- * Importing it normally — with or without the `node:` prefix — panics
- * Turbopack's file tracer during `next build`:
+ * Importing a node builtin normally here — with or without the `node:` prefix —
+ * panics Turbopack's file tracer during `next build`:
  *
  *     NftJsonAsset: cannot handle filepath node:worker_threads
  *
- * which fails the whole build, not just this route. process.getBuiltinModule
- * is a plain method call, so the specifier never enters the module graph and
- * there is nothing for the tracer to resolve. It is also a real function at
- * runtime under both Next and vitest, which a hidden dynamic import is not:
- * Vite's module runner has no import callback to hand an evaluated one.
+ * which fails the whole build, not just this route. process.getBuiltinModule is
+ * a plain method call, so the specifier never enters the module graph and there
+ * is nothing for the tracer to resolve. It is also a real function at runtime
+ * under both Next and vitest, which a hidden dynamic import is not: Vite's
+ * module runner has no import callback to hand an evaluated one.
  *
  * getBuiltinModule arrived in Node 20.16 / 22.3; older versions fall through to
  * createRequire, which has always been there. Either way the specifier is a
@@ -32,17 +34,17 @@ type NodeWithBuiltins = NodeJS.Process & {
   getBuiltinModule?: (id: string) => unknown;
 };
 
-function workerThreads(): typeof import('worker_threads') {
+function childProcess(): typeof import('child_process') {
   const get = (process as NodeWithBuiltins).getBuiltinModule;
   if (typeof get === 'function') {
-    return get.call(process, 'worker_threads') as typeof import('worker_threads');
+    return get.call(process, 'child_process') as typeof import('child_process');
   }
   // Older Node: go through a require anchored at the app root. Also invisible
   // to the tracer, and it means the deployed box's Node version cannot quietly
   // turn this whole feature off.
   return createRequire(path.join(process.cwd(), 'package.json'))(
-    'worker_threads'
-  ) as typeof import('worker_threads');
+    'child_process'
+  ) as typeof import('child_process');
 }
 
 /** Generous enough for the heaviest model at its largest settings, short enough
@@ -52,10 +54,10 @@ export const RENDER_TIMEOUT_MS = 20_000;
 /**
  * How many renders may run at once, and how many may wait.
  *
- * Not a tuning knob — a memory bound, sized to the machine it lands on. A single
- * worker spikes RSS by ~200MB; four at once took a process from 38MB to 901MB.
- * Previews fire on page load, so four open tabs is an ordinary thing a visitor
- * does. Unbounded, that is an out-of-memory kill, not a slow page.
+ * Not a tuning knob — a memory bound, sized to the machine it lands on. Each
+ * render costs ~200MB of resident memory while it runs. Previews fire on page
+ * load, so four open tabs is an ordinary thing a visitor does. Unbounded, that
+ * is an out-of-memory kill, not a slow page.
  *
  * Beyond the cap, queue a little and then shed: a visitor told "busy, try again"
  * is better off than one holding a connection open behind a queue that cannot
@@ -143,7 +145,7 @@ export function renderQueueState(): {
   };
 }
 
-const workerPath = () => path.join(process.cwd(), 'lib', 'parametric', 'render.worker.mjs');
+const childPath = () => path.join(process.cwd(), 'lib', 'parametric', 'render.child.mjs');
 const scadPath = (file: string) => path.join(process.cwd(), 'assets', 'parametric', file);
 
 /** SCAD sources are small and unchanging; read each one once per process. */
@@ -188,39 +190,55 @@ export async function renderScad(source: string, defines: string[]): Promise<Ren
 
 function runRender(source: string, defines: string[]): Promise<RenderResult> {
   const started = Date.now();
-  const { Worker } = workerThreads();
+  const { fork } = childProcess();
 
   return new Promise((resolve, reject) => {
-    const worker = new Worker(workerPath(), { workerData: { source, defines } });
+    const child = fork(childPath(), [], {
+      // stdout carries the mesh, stderr is inherited so a crash shows up in
+      // the service log, and IPC carries the job and any error message.
+      stdio: ['ignore', 'pipe', 'inherit', 'ipc'],
+    });
+
+    const chunks: Buffer[] = [];
+    let failure: string | null = null;
     let settled = false;
 
     const finish = (fn: () => void) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      void worker.terminate();
       fn();
     };
 
     const timer = setTimeout(() => {
-      finish(() => reject(new Error('That combination took too long to build. Try smaller numbers.')));
+      child.kill('SIGKILL');
+      finish(() =>
+        reject(new Error('That combination took too long to build. Try smaller numbers.'))
+      );
     }, RENDER_TIMEOUT_MS);
 
-    worker.on('message', (msg: { ok: boolean; stl?: Uint8Array; error?: string }) => {
-      if (msg.ok && msg.stl) {
-        const stl = Buffer.from(msg.stl.buffer, msg.stl.byteOffset, msg.stl.byteLength);
-        finish(() => resolve({ stl, ms: Date.now() - started }));
-      } else {
-        finish(() => reject(new Error(msg.error ?? 'render failed')));
+    child.stdout?.on('data', (chunk: Buffer) => chunks.push(chunk));
+    child.on('message', (msg: { error?: string }) => {
+      if (msg && typeof msg.error === 'string') failure = msg.error;
+    });
+
+    child.on('error', (err) => {
+      child.kill('SIGKILL');
+      finish(() => reject(err));
+    });
+
+    child.on('close', (code) => {
+      if (failure) return finish(() => reject(new Error(failure!)));
+      if (code !== 0) {
+        return finish(() => reject(new Error(`render process exited ${code}`)));
       }
+      const stl = Buffer.concat(chunks);
+      if (stl.length < 84) {
+        return finish(() => reject(new Error('render produced no usable output')));
+      }
+      finish(() => resolve({ stl, ms: Date.now() - started }));
     });
 
-    worker.on('error', (err) => finish(() => reject(err)));
-
-    worker.on('exit', (code) => {
-      // A clean exit after a message is normal; this only fires first if the
-      // worker died before reporting anything.
-      finish(() => reject(new Error(`render worker exited early (${code})`)));
-    });
+    child.send({ source, defines });
   });
 }
