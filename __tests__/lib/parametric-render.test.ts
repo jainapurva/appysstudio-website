@@ -405,7 +405,10 @@ describe('test assumptions', () => {
     for (const model of PARAMETRIC_MODELS) {
       const { rejected, values } = resolveParams(model.params, {});
       expect(rejected, model.slug).toEqual([]);
-      expect(Object.keys(values as ParamValues)).toHaveLength(model.params.length);
+      // A logo carries geometry rather than a value, so it resolves to nothing
+      // by design — every parameter that does hold a value must be present.
+      const valued = model.params.filter((p) => p.kind !== 'logo');
+      expect(Object.keys(values as ParamValues)).toHaveLength(valued.length);
     }
   });
 });

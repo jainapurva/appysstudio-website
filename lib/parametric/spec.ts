@@ -39,7 +39,23 @@ export interface ChoiceParam {
   help?: string;
 }
 
-export type ParamDef = NumberParam | BoolParam | ChoiceParam;
+/**
+ * Artwork rather than a value.
+ *
+ * A logo cannot ride in a query string, so a model carrying one of these is
+ * driven by POST and its contours are appended to the SCAD source instead of
+ * becoming a -D define. resolveParams and toDefines both step over it.
+ */
+export interface LogoParam {
+  kind: 'logo';
+  key: string;
+  label: string;
+  help?: string;
+  /** Shown when nothing has been uploaded yet. */
+  placeholder?: string;
+}
+
+export type ParamDef = NumberParam | BoolParam | ChoiceParam | LogoParam;
 
 export type ParamValue = number | boolean | string;
 export type ParamValues = Record<string, ParamValue>;
@@ -65,6 +81,10 @@ export function assertValidParamDefs(defs: ParamDef[], modelSlug: string): void 
     }
     if (seen.has(def.key)) throw new Error(`${where}: duplicate parameter key`);
     seen.add(def.key);
+
+    if (def.kind === 'logo') {
+      continue;                      // no range, no options, nothing to check
+    }
 
     if (def.kind === 'number') {
       if (!(def.min < def.max)) throw new Error(`${where}: min must be below max`);
@@ -120,6 +140,7 @@ export function resolveParams(
   const rejected: string[] = [];
 
   for (const def of defs) {
+    if (def.kind === 'logo') continue;   // arrives as geometry, not a value
     const given = raw[def.key];
 
     if (given === undefined || given === '') {
@@ -166,6 +187,7 @@ export function toDefines(defs: ParamDef[], values: ParamValues): string[] {
   const out: string[] = [];
 
   for (const def of defs) {
+    if (def.kind === 'logo') continue;   // appended as source, never a define
     const value = values[def.key];
     if (value === undefined) continue;
 
@@ -176,7 +198,7 @@ export function toDefines(defs: ParamDef[], values: ParamValues): string[] {
       out.push(`${def.key}=${value}`);
     } else if (def.kind === 'bool') {
       out.push(`${def.key}=${value ? 'true' : 'false'}`);
-    } else {
+    } else if (def.kind === 'choice') {
       // Look the value up rather than formatting what we were handed, so only
       // strings from our own manifest can ever reach the SCAD source.
       const match = def.options.find((o) => o.value === value);
