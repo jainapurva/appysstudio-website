@@ -178,9 +178,19 @@ export function layOutParts(parts: { mesh: Mesh; name: string; assembly?: string
  * The result sits on z=0 with its footprint centred, because slicers place a
  * 3MF where the file says and OpenSCAD models are authored around whatever
  * origin suited the geometry.
+ *
+ * Parts that name the same `assembly` are additionally wrapped in a
+ * `<components>` object, which is what makes their registration survive
+ * contact with a slicer. Sharing one transform is only enough while nothing
+ * moves the bodies, and something always does: the file is centred on the
+ * origin, every bed's origin is a corner, so every slicer has to reposition it.
+ * Bambu Studio moves top-level objects one at a time — sliced from three loose
+ * objects it put the inlay 25mm clear of the cap it fills — but reads a
+ * components object as one object with one part per body, kept together and
+ * still separately colourable.
  */
 export async function toThreeMf(
-  meshes: Mesh | { mesh: Mesh; name: string }[],
+  meshes: Mesh | { mesh: Mesh; name: string; assembly?: string }[],
   title: string
 ): Promise<Buffer> {
   const parts = Array.isArray(meshes) ? meshes : [{ mesh: meshes, name: title }];
@@ -227,8 +237,50 @@ export async function toThreeMf(
     lines.push('    </triangles>', '   </mesh>', '  </object>');
   });
 
+  // One build item per assembly, in the order the parts were given. A part
+  // that named no assembly stands alone, which leaves a model that never asked
+  // to be grouped exactly as it was.
+  const items: number[] = [];
+  const wrapped = new Map<string, number[]>();
+  parts.forEach(({ assembly }, index) => {
+    if (!assembly) {
+      items.push(index + 1);
+      return;
+    }
+    const group = wrapped.get(assembly);
+    if (group) {
+      group.push(index + 1);
+    } else {
+      wrapped.set(assembly, [index + 1]);
+      items.push(-wrapped.size);
+    }
+  });
+
+  const wrapperId = new Map<string, number>();
+  let nextId = parts.length + 1;
+  for (const [assembly, members] of wrapped) {
+    if (members.length < 2) continue;
+    wrapperId.set(assembly, nextId);
+    // Named after the first body in the group: 3MF components carry no name of
+    // their own, and Bambu Studio labels the parts after their parent.
+    const name = parts[members[0] - 1].name;
+    lines.push(`  <object id="${nextId}" type="model" name="${escapeXml(name)}">`, '   <components>');
+    for (const member of members) lines.push(`    <component objectid="${member}"/>`);
+    lines.push('   </components>', '  </object>');
+    nextId += 1;
+  }
+
   lines.push(' </resources>', ' <build>');
-  parts.forEach((_, index) => lines.push(`  <item objectid="${index + 1}"/>`));
+  const groups = [...wrapped.keys()];
+  for (const item of items) {
+    if (item > 0) {
+      lines.push(`  <item objectid="${item}"/>`);
+      continue;
+    }
+    const assembly = groups[-item - 1];
+    const members = wrapped.get(assembly)!;
+    lines.push(`  <item objectid="${wrapperId.get(assembly) ?? members[0]}"/>`);
+  }
   lines.push(' </build>', '</model>', '');
 
   const entries: ZipEntry[] = [

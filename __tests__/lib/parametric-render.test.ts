@@ -400,6 +400,52 @@ describe('laying parts out', () => {
     expect(base.mesh.bounds.min[0] - cap.mesh.bounds.max[0]).toBeCloseTo(12, 6);
   });
 
+  it('wraps an assembly in one components object, and leaves the rest alone', async () => {
+    // Sharing a transform only keeps parts registered while nothing moves
+    // them, and something always does: the file is centred on the origin and
+    // every bed's origin is a corner. Bambu Studio repositions top-level
+    // objects one at a time, so the pocket and its inlay have to arrive as one
+    // object with two parts, not two objects that happen to line up.
+    const xml = modelXml(
+      await toThreeMf(
+        [
+          { mesh: box(-16.5, 33, 'Cap', 'cap').mesh, name: 'Cap', assembly: 'cap' },
+          { mesh: box(-11, 22, 'Logo inlay', 'cap').mesh, name: 'Logo inlay', assembly: 'cap' },
+          { mesh: box(-21, 42, 'Base', 'base').mesh, name: 'Base', assembly: 'base' },
+        ],
+        'Logo Clicker'
+      )
+    );
+
+    expect(xml).toContain('<components>');
+    expect(xml).toContain('<component objectid="1"/>');
+    expect(xml).toContain('<component objectid="2"/>');
+
+    // Two pieces go on the plate: the grouped cap, and the base on its own.
+    const items = [...xml.matchAll(/<item objectid="(\d+)"/g)].map((m) => Number(m[1]));
+    expect(items).toHaveLength(2);
+    // The wrapper is written after the bodies, so it outranks all of them.
+    expect(Math.max(...items)).toBe(4);
+    // A lone assembly is referenced directly rather than wrapped in nothing.
+    expect(items).toContain(3);
+  });
+
+  it('leaves an ungrouped multi-part model as plain objects', async () => {
+    // The paint kit hands over two co-located bodies and declares no
+    // assembly. It is on prod in that shape; nothing here may regroup it.
+    const xml = modelXml(
+      await toThreeMf(
+        [
+          { mesh: box(-5, 10, 'Plate').mesh, name: 'Plate' },
+          { mesh: box(-3, 6, 'Outline').mesh, name: 'Outline' },
+        ],
+        'Paint Kit'
+      )
+    );
+    expect(xml).not.toContain('<components>');
+    expect([...xml.matchAll(/<item objectid="(\d+)"/g)].map((m) => Number(m[1]))).toEqual([1, 2]);
+  });
+
   it('gives the logo clicker two assemblies, so its base cannot land in its cap', () => {
     // The bug this guards: three bodies all at the origin open in a slicer
     // intersecting, and the obvious fix — Arrange — is exactly what pulls the

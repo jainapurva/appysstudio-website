@@ -116,7 +116,8 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
       'Both colours sit in the same first few layers, so this wants an AMS or a second extruder — a filament swap cannot do it.',
       'A logo with strokes thinner than about 0.8mm will print soft. Raise the line thickening or scale it up.',
     ],
-    printHint: 'Cap prints face-down, base prints as-is. No supports. Around 40 minutes for the pair at 0.2mm.',
+    printHint:
+      'Cap prints face-down, base prints as-is. No supports. Around 1h 45m for all three bodies at 0.2mm — the base is most of it.',
   },
   {
     slug: 'twisty-vase',
