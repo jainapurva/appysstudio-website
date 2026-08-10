@@ -47,9 +47,15 @@ export interface ParametricModel {
    *
    * `partKey` is the SCAD variable that selects one; `previewPart` is the value
    * used for the customiser's single-mesh preview.
+   *
+   * `assembly` says which bodies belong in the same place. Parts that share one
+   * keep the coordinates OpenSCAD gave them, because their registration is the
+   * whole point — an inlay has to sit in its pocket. Parts that do not are laid
+   * out beside each other, since a body that is a separate physical piece has
+   * no business intersecting another one on the plate.
    */
   partKey?: string;
-  parts?: { value: string; name: string; needsLogo?: boolean }[];
+  parts?: { value: string; name: string; needsLogo?: boolean; assembly?: string }[];
   previewPart?: string;
   /** Practical notes shown next to the form — print orientation, materials. */
   notes: string[];
@@ -72,13 +78,14 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
     tag: 'Free',
     partKey: 'part',
     parts: [
-      { value: 'cap', name: 'Cap' },
+      { value: 'cap', name: 'Cap', assembly: 'cap' },
       // Only exists once artwork has been uploaded. OpenSCAD treats "nothing
       // to export" as an error, so this body is skipped rather than rendered
       // and caught — matching on an error string would risk swallowing a real
       // failure.
-      { value: 'logo', name: 'Logo inlay', needsLogo: true },
-      { value: 'base', name: 'Base' },
+      { value: 'logo', name: 'Logo inlay', needsLogo: true, assembly: 'cap' },
+      // The base is a second piece printed alongside, not part of the cap.
+      { value: 'base', name: 'Base', assembly: 'base' },
     ],
     previewPart: 'preview',
     params: [

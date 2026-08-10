@@ -9,7 +9,7 @@ import {
   RenderBusyError,
   RENDER_TIMEOUT_MS,
 } from '@/lib/parametric/render';
-import { parseBinaryStl, meshSize, toThreeMf } from '@/lib/parametric/mesh';
+import { parseBinaryStl, meshSize, layOutParts, toThreeMf } from '@/lib/parametric/mesh';
 import {
   bounds,
   crossSectionLoops,
@@ -357,6 +357,57 @@ describe('mesh conversion', () => {
     },
     RENDER_BUDGET_MS
   );
+});
+
+describe('laying parts out', () => {
+  /** A unit cube spanning [x, x+w] — enough for bounds arithmetic. */
+  function box(x: number, w: number, name: string, assembly?: string) {
+    const mesh = {
+      vertices: Float64Array.from([x, 0, 0, x + w, 0, 0, x + w, 1, 1]),
+      indices: Uint32Array.from([0, 1, 2]),
+      triangleCount: 1,
+      bounds: { min: [x, 0, 0], max: [x + w, 1, 1] },
+    } as const;
+    return { mesh: mesh as unknown as Parameters<typeof layOutParts>[0][0]['mesh'], name, assembly };
+  }
+
+  const span = (part: { mesh: { bounds: { min: readonly number[]; max: readonly number[] } } }) =>
+    [part.mesh.bounds.min[0], part.mesh.bounds.max[0]];
+
+  it('leaves a single assembly exactly where it was', () => {
+    // The paint kit declares no assemblies at all, and its two bodies are
+    // meant to be co-located. Nothing may move under it.
+    const parts = [box(-5, 10, 'Plate'), box(-3, 6, 'Outline')];
+    const out = layOutParts(parts);
+    expect(out.map(span)).toEqual([[-5, 5], [-3, 3]]);
+  });
+
+  it('keeps bodies of one assembly registered while separating the others', () => {
+    const parts = [
+      box(-16.5, 33, 'Cap', 'cap'),
+      box(-11, 22, 'Logo inlay', 'cap'),
+      box(-21, 42, 'Base', 'base'),
+    ];
+    const [cap, logo, base] = layOutParts(parts);
+
+    // The inlay has to stay put relative to the pocket it fills — same offset,
+    // so the same 5.5mm inset from the cap edge it started with.
+    expect(cap.mesh.bounds.min[0] - logo.mesh.bounds.min[0]).toBeCloseTo(-5.5, 6);
+    expect(cap.mesh.bounds.max[0] - logo.mesh.bounds.max[0]).toBeCloseTo(5.5, 6);
+
+    // The base is a separate piece and must clear the cap entirely.
+    expect(base.mesh.bounds.min[0]).toBeGreaterThan(cap.mesh.bounds.max[0]);
+    expect(base.mesh.bounds.min[0] - cap.mesh.bounds.max[0]).toBeCloseTo(12, 6);
+  });
+
+  it('gives the logo clicker two assemblies, so its base cannot land in its cap', () => {
+    // The bug this guards: three bodies all at the origin open in a slicer
+    // intersecting, and the obvious fix — Arrange — is exactly what pulls the
+    // inlay out of its pocket.
+    const model = findModel('logo-clicker');
+    expect(model?.parts?.every((part) => part.assembly)).toBe(true);
+    expect(new Set(model?.parts?.map((part) => part.assembly)).size).toBe(2);
+  });
 });
 
 describe('render safety', () => {

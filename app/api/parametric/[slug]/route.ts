@@ -7,7 +7,13 @@ import {
   type ParamValues,
 } from '@/lib/parametric/spec';
 import { loadScad, renderScad, RenderBusyError } from '@/lib/parametric/render';
-import { parseBinaryStl, meshSize, toThreeMf, type Mesh } from '@/lib/parametric/mesh';
+import {
+  parseBinaryStl,
+  meshSize,
+  layOutParts,
+  toThreeMf,
+  type Mesh,
+} from '@/lib/parametric/mesh';
 import { readContours, contoursToScad, type Contour } from '@/lib/parametric/contours';
 import { clientIp, rateLimit } from '@/lib/keycaps/ratelimit';
 import { trackEvent } from '@/lib/analytics';
@@ -40,9 +46,10 @@ interface Built {
  * Render a model and package it.
  *
  * A model that declares `parts` is rendered once per body when a 3MF is asked
- * for, so the slicer receives separate objects it can colour independently.
- * Everything else — every STL, and every preview — is one pass over the whole
- * model, because a preview only ever shows one mesh.
+ * for, so the slicer receives separate objects it can colour independently, and
+ * `layOutParts` puts the ones that are separate physical pieces beside each
+ * other. Everything else — every STL, and every preview — is one pass over the
+ * whole model, because a preview only ever shows one mesh.
  */
 async function build(
   model: ParametricModel,
@@ -59,7 +66,7 @@ async function build(
   const wantsParts = format === '3mf' && model.parts && model.parts.length > 0;
 
   if (wantsParts) {
-    const meshes: { mesh: Mesh; name: string }[] = [];
+    const rendered: { mesh: Mesh; name: string; assembly?: string }[] = [];
     let ms = 0;
     for (const part of model.parts!) {
       // A body that only exists because artwork was uploaded is skipped when
@@ -71,9 +78,12 @@ async function build(
       const result = await renderScad(source, [...defines, ...partDefine(model, part.value)]);
       ms += result.ms;
       const mesh = parseBinaryStl(result.stl);
-      if (mesh.triangleCount > 0) meshes.push({ mesh, name: part.name });
+      if (mesh.triangleCount > 0) {
+        rendered.push({ mesh, name: part.name, assembly: part.assembly });
+      }
     }
-    if (meshes.length === 0) throw new Error('empty model');
+    if (rendered.length === 0) throw new Error('empty model');
+    const meshes = layOutParts(rendered);
 
     const body = await toThreeMf(meshes, model.name);
     const bounds = meshes.reduce(

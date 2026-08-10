@@ -98,6 +98,76 @@ function escapeXml(text: string): string {
 }
 
 /**
+ * Slide a mesh along x, bounds included.
+ *
+ * Used to lay separate physical pieces out beside each other before they are
+ * written into one 3MF. Vertices are moved rather than an item transform being
+ * written, so the offset survives every reader — a slicer that ignores build
+ * transforms would otherwise stack the pieces back on top of one another.
+ */
+export function shiftX(mesh: Mesh, dx: number): Mesh {
+  if (dx === 0) return mesh;
+
+  const vertices = new Float64Array(mesh.vertices);
+  for (let i = 0; i < vertices.length; i += 3) vertices[i] += dx;
+
+  return {
+    vertices,
+    indices: mesh.indices,
+    triangleCount: mesh.triangleCount,
+    bounds: {
+      min: [mesh.bounds.min[0] + dx, mesh.bounds.min[1], mesh.bounds.min[2]],
+      max: [mesh.bounds.max[0] + dx, mesh.bounds.max[1], mesh.bounds.max[2]],
+    },
+  };
+}
+
+/**
+ * Clear space between two pieces laid out beside each other, in mm.
+ *
+ * Wide enough that a default 5mm brim on each does not run into its neighbour,
+ * since a merged brim is the one way two properly separated pieces still come
+ * off the plate stuck together.
+ */
+const PART_GAP_MM = 12;
+
+/**
+ * Lay assemblies out side by side along x.
+ *
+ * Parts sharing an `assembly` are left exactly where OpenSCAD put them: their
+ * registration is load-bearing, and an inlay that has drifted out of its pocket
+ * is a broken file. Everything else is a separate piece, and separate pieces
+ * that arrive intersecting are worse than merely untidy — the obvious fix in
+ * any slicer is Arrange, which would also pull the registered ones apart.
+ *
+ * Parts that declare no assembly all count as one, which leaves a model that
+ * never asked for a layout exactly as it was.
+ */
+export function layOutParts(parts: { mesh: Mesh; name: string; assembly?: string }[]): typeof parts {
+  const order: string[] = [];
+  for (const part of parts) {
+    const key = part.assembly ?? '';
+    if (!order.includes(key)) order.push(key);
+  }
+  if (order.length < 2) return parts;
+
+  const offsets = new Map<string, number>();
+  let cursor = 0;
+  for (const key of order) {
+    const group = parts.filter((part) => (part.assembly ?? '') === key);
+    const min = Math.min(...group.map((part) => part.mesh.bounds.min[0]));
+    const max = Math.max(...group.map((part) => part.mesh.bounds.max[0]));
+    offsets.set(key, cursor - min);
+    cursor += max - min + PART_GAP_MM;
+  }
+
+  return parts.map((part) => ({
+    ...part,
+    mesh: shiftX(part.mesh, offsets.get(part.assembly ?? '') ?? 0),
+  }));
+}
+
+/**
  * Wrap one or more meshes as a 3MF.
  *
  * Every mesh shares one transform, derived from their combined bounds, so a
