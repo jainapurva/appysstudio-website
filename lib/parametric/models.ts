@@ -49,7 +49,7 @@ export interface ParametricModel {
    * used for the customiser's single-mesh preview.
    */
   partKey?: string;
-  parts?: { value: string; name: string }[];
+  parts?: { value: string; name: string; needsLogo?: boolean }[];
   previewPart?: string;
   /** Practical notes shown next to the form — print orientation, materials. */
   notes: string[];
@@ -73,7 +73,11 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
     partKey: 'part',
     parts: [
       { value: 'cap', name: 'Cap' },
-      { value: 'logo', name: 'Logo inlay' },
+      // Only exists once artwork has been uploaded. OpenSCAD treats "nothing
+      // to export" as an error, so this body is skipped rather than rendered
+      // and caught — matching on an error string would risk swallowing a real
+      // failure.
+      { value: 'logo', name: 'Logo inlay', needsLogo: true },
       { value: 'base', name: 'Base' },
     ],
     previewPart: 'preview',

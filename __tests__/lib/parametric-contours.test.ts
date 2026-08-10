@@ -94,6 +94,13 @@ describe('logo-clicker model', () => {
     expect(model!.previewPart).toBe('preview');
   });
 
+  it('marks the inlay as the body that only exists with artwork', () => {
+    const parts = model!.parts!;
+    expect(parts.find((p) => p.value === 'logo')?.needsLogo).toBe(true);
+    expect(parts.find((p) => p.value === 'cap')?.needsLogo).toBeUndefined();
+    expect(parts.find((p) => p.value === 'base')?.needsLogo).toBeUndefined();
+  });
+
   // Apurva's rule: nothing reaches the site until a test print confirms it.
   it('stays unlisted until it has been printed', () => {
     expect(model!.verified).toBe(false);
@@ -114,4 +121,59 @@ describe('logo-clicker model', () => {
     expect(rejected.length).toBeGreaterThan(0);
     expect(values.cap_width).toBe(48);
   });
+});
+
+// These go through the real openscad-wasm build, which is a different OpenSCAD
+// from any local CLI: it has the manifold backend and, importantly, no fonts.
+// A model that reached for text() would pass every check above and fail here.
+describe('logo clicker renders with real artwork', () => {
+  const RENDER_BUDGET_MS = 90_000;
+
+  // A ring with a bar through it: the hole proves even-odd nesting survives
+  // the trip into SCAD, and the bar gives the outline something to clip.
+  const artwork: [number, number][][] = [
+    [[-10, -10], [10, -10], [10, 10], [-10, 10]],
+    [[-5, -5], [5, -5], [5, 5], [-5, 5]],
+    [[-14, -2], [14, -2], [14, 2], [-14, 2]],
+  ];
+
+  async function render(part: string, contours: [number, number][][] = artwork) {
+    const { loadScad, renderScad } = await import('@/lib/parametric/render');
+    const { parseBinaryStl, meshSize } = await import('@/lib/parametric/mesh');
+    const model = PARAMETRIC_MODELS.find((m) => m.slug === 'logo-clicker')!;
+    const { values } = resolveParams(model.params, {});
+    const scad = await loadScad(model.file);
+    const source = `${scad}\n${contoursToScad(readContours(contours, 'logo'))}`;
+    const { stl } = await renderScad(source, [...toDefines(model.params, values), `part="${part}"`]);
+    const mesh = parseBinaryStl(stl);
+    return { mesh, size: meshSize(mesh) };
+  }
+
+  it('builds a cap with the logo cut out of it', async () => {
+    const { mesh, size } = await render('cap');
+    expect(mesh.triangleCount).toBeGreaterThan(0);
+    // 33mm cap, 12mm tall, whatever the artwork was
+    expect(size[0]).toBeCloseTo(33, 0);
+    expect(size[2]).toBeCloseTo(12, 0);
+  }, RENDER_BUDGET_MS);
+
+  it('builds an inlay one logo_depth thick', async () => {
+    const { mesh, size } = await render('logo');
+    expect(mesh.triangleCount).toBeGreaterThan(0);
+    expect(size[2]).toBeCloseTo(0.8, 2);
+    // scaled to the default 22mm across the longest axis
+    expect(Math.max(size[0], size[1])).toBeCloseTo(22, 0);
+  }, RENDER_BUDGET_MS);
+
+  // The reason the inlay body carries needsLogo: asking OpenSCAD for it with
+  // no artwork is an error, not an empty mesh. The route skips it instead, so
+  // downloading a 3MF before uploading a logo still yields a cap and a base.
+  it('cannot be rendered with no artwork, which is why it is skipped', async () => {
+    await expect(render('logo', [])).rejects.toThrow();
+  }, RENDER_BUDGET_MS);
+
+  it('still builds a cap when no logo was uploaded', async () => {
+    const { mesh } = await render('cap', []);
+    expect(mesh.triangleCount).toBeGreaterThan(0);
+  }, RENDER_BUDGET_MS);
 });

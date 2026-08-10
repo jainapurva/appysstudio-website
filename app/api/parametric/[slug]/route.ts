@@ -62,10 +62,15 @@ async function build(
     const meshes: { mesh: Mesh; name: string }[] = [];
     let ms = 0;
     for (const part of model.parts!) {
+      // A body that only exists because artwork was uploaded is skipped when
+      // there is none. Rendering it anyway would fail — OpenSCAD treats
+      // "nothing to export" as an error — and recognising that by its message
+      // would mean a real failure could be mistaken for an empty body.
+      if (part.needsLogo && !logoScad) continue;
+
       const result = await renderScad(source, [...defines, ...partDefine(model, part.value)]);
       ms += result.ms;
       const mesh = parseBinaryStl(result.stl);
-      // A body can legitimately be empty — no logo uploaded means no inlay.
       if (mesh.triangleCount > 0) meshes.push({ mesh, name: part.name });
     }
     if (meshes.length === 0) throw new Error('empty model');
