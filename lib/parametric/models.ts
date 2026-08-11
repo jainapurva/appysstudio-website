@@ -61,6 +61,21 @@ export interface ParametricModel {
   notes: string[];
   /** Rough print time and orientation advice, shown under the preview. */
   printHint: string;
+  /**
+   * "Or have us print them" — the paid path beside the free download.
+   *
+   * Only models we are actually willing to make in quantity declare this, so
+   * the card is manifest-driven like everything else here: no per-model page,
+   * no second place to remember. It rides on the model page, which means the
+   * `verified` gate covers it too — an unprinted design cannot be sold any more
+   * than it can be downloaded.
+   */
+  bulkOrder?: {
+    unitPrice: number;
+    minQuantity: number;
+    /** What the unit price covers, listed under the price. */
+    includes: string[];
+  };
 }
 
 export const PARAMETRIC_MODELS: ParametricModel[] = [
@@ -118,6 +133,15 @@ export const PARAMETRIC_MODELS: ParametricModel[] = [
     ],
     printHint:
       'Cap prints face-down, base prints as-is. No supports. Around 1h 45m for all three bodies at 0.2mm — the base is most of it.',
+    bulkOrder: {
+      unitPrice: 5,
+      minQuantity: 25,
+      includes: [
+        'Printed in your two colours, logo inlaid flush',
+        'A clicky switch fitted — it arrives working',
+        'Compact 24mm cap, the size the price is built around',
+      ],
+    },
   },
   {
     slug: 'twisty-vase',

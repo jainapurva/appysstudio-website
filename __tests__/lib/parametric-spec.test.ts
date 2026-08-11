@@ -183,6 +183,38 @@ describe('unverified models stay off the site', () => {
     }
   });
 
+  it('cannot sell a model it will not show', () => {
+    // The bulk-order card rides on the model page, so the gate covers the paid
+    // path for free — but only while nothing else renders it. If a bulk order
+    // ever grows a home of its own, this is the assertion that breaks.
+    for (const model of PARAMETRIC_MODELS) {
+      if (!model.bulkOrder) continue;
+      expect(findListedModel(model.slug)?.slug, model.slug).toBe(
+        model.verified ? model.slug : undefined
+      );
+    }
+  });
+
+  it('prices a bulk order at something a person could pay', () => {
+    for (const model of PARAMETRIC_MODELS) {
+      if (!model.bulkOrder) continue;
+      const { unitPrice, minQuantity, includes } = model.bulkOrder;
+      expect(unitPrice, model.slug).toBeGreaterThan(0);
+      expect(minQuantity, model.slug).toBeGreaterThanOrEqual(1);
+      expect(Number.isInteger(minQuantity), model.slug).toBe(true);
+      expect(includes.length, model.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it('holds the clicker to the price Apurva set', () => {
+    // $5 a piece with a floor of 25, switch fitted — decided 2026-08-10.
+    // Written down because the card, the total and the invoice all read it.
+    expect(findModel('logo-clicker')?.bulkOrder).toMatchObject({
+      unitPrice: 5,
+      minQuantity: 25,
+    });
+  });
+
   it('still covers unverified models with the geometry tests', () => {
     // The point is that the work is kept, not thrown away — flipping the flag
     // after a test print should be the only change needed.
