@@ -40,13 +40,109 @@ export interface ParametricModel {
   intro: string;
   tag: string;
   params: ParamDef[];
+  /**
+   * Bodies to render separately so a 3MF can carry them as distinct objects,
+   * which is what lets a slicer put a different filament on each. Rendering is
+   * one pass per entry, so keep the list short.
+   *
+   * `partKey` is the SCAD variable that selects one; `previewPart` is the value
+   * used for the customiser's single-mesh preview.
+   *
+   * `assembly` says which bodies belong in the same place. Parts that share one
+   * keep the coordinates OpenSCAD gave them, because their registration is the
+   * whole point — an inlay has to sit in its pocket. Parts that do not are laid
+   * out beside each other, since a body that is a separate physical piece has
+   * no business intersecting another one on the plate.
+   */
+  partKey?: string;
+  parts?: { value: string; name: string; needsLogo?: boolean; assembly?: string }[];
+  previewPart?: string;
   /** Practical notes shown next to the form — print orientation, materials. */
   notes: string[];
   /** Rough print time and orientation advice, shown under the preview. */
   printHint: string;
+  /**
+   * "Or have us print them" — the paid path beside the free download.
+   *
+   * Only models we are actually willing to make in quantity declare this, so
+   * the card is manifest-driven like everything else here: no per-model page,
+   * no second place to remember. It rides on the model page, which means the
+   * `verified` gate covers it too — an unprinted design cannot be sold any more
+   * than it can be downloaded.
+   */
+  bulkOrder?: {
+    unitPrice: number;
+    minQuantity: number;
+    /** What the unit price covers, listed under the price. */
+    includes: string[];
+  };
 }
 
 export const PARAMETRIC_MODELS: ParametricModel[] = [
+  {
+    slug: 'logo-clicker',
+    // Geometry is checked, but whether the cap actually clicks on a real MX
+    // switch is a question only a printer and a switch can answer.
+    verified: false,
+    file: 'logo_clicker.scad',
+    name: 'Logo Clicker',
+    blurb:
+      'A desk clicker built around a keyboard switch, with your logo inlaid flush into the cap. Upload an SVG or PNG and pick a shape.',
+    intro:
+      'The logo is not printed on top — it is a pocket cut into the cap face and a matching piece that fills it, so the surface stays flat and the colour goes all the way through. The cap comes out face-down on the plate, which puts the logo in the first few layers against the build sheet: no supports, no bridging, and the smoothest face the printer can give. Drop a Cherry-MX style switch into the base and the cap presses straight onto its stem.',
+    tag: 'Free',
+    partKey: 'part',
+    parts: [
+      { value: 'cap', name: 'Cap', assembly: 'cap' },
+      // Only exists once artwork has been uploaded. OpenSCAD treats "nothing
+      // to export" as an error, so this body is skipped rather than rendered
+      // and caught — matching on an error string would risk swallowing a real
+      // failure.
+      { value: 'logo', name: 'Logo inlay', needsLogo: true, assembly: 'cap' },
+      // The base is a second piece printed alongside, not part of the cap.
+      { value: 'base', name: 'Base', assembly: 'base' },
+    ],
+    previewPart: 'preview',
+    params: [
+      {
+        kind: 'logo', key: 'logo', label: 'Your logo',
+        placeholder: 'SVG or PNG — a solid shape on a plain background works best',
+        help: 'Traced in your browser, so the image itself never leaves your machine.',
+      },
+      {
+        kind: 'choice', key: 'shape', label: 'Shape', default: 'circle',
+        options: [
+          { value: 'circle', label: 'Circle' },
+          { value: 'square', label: 'Rounded square' },
+          { value: 'rectangle', label: 'Rectangle' },
+          { value: 'pill', label: 'Pill' },
+        ],
+      },
+      { kind: 'number', key: 'cap_width', label: 'Cap width', unit: 'mm', min: 24, max: 48, step: 1, default: 33 },
+      { kind: 'number', key: 'cap_depth', label: 'Cap depth', unit: 'mm', min: 24, max: 48, step: 1, default: 26, help: 'Rectangle only — the other shapes stay square on this axis.' },
+      { kind: 'number', key: 'corner_radius', label: 'Corner rounding', unit: 'mm', min: 0, max: 12, step: 0.5, default: 4, help: 'Square and rectangle only.' },
+      { kind: 'number', key: 'logo_size', label: 'Logo size', unit: 'mm', min: 6, max: 44, step: 0.5, default: 22, help: 'Across the longest axis. Anything past the face edge is trimmed.' },
+      { kind: 'number', key: 'logo_depth', label: 'Inlay depth', unit: 'mm', min: 0.2, max: 2, step: 0.1, default: 0.8, help: '0.8mm is four layers at 0.2mm.' },
+      { kind: 'number', key: 'logo_bleed', label: 'Line thickening', unit: 'mm', min: -0.6, max: 0.6, step: 0.05, default: 0, help: 'Nudge up if your logo has hairline strokes that would print mushy.' },
+    ],
+    notes: [
+      'Needs a Cherry-MX style switch — any of the cheap clicky ones work.',
+      'The cap and the inlay come out as separate bodies in the 3MF, so assign a filament to each in your slicer.',
+      'Both colours sit in the same first few layers, so this wants an AMS or a second extruder — a filament swap cannot do it.',
+      'A logo with strokes thinner than about 0.8mm will print soft. Raise the line thickening or scale it up.',
+    ],
+    printHint:
+      'Cap prints face-down, base prints as-is. No supports. Around 1h 45m for all three bodies at 0.2mm — the base is most of it.',
+    bulkOrder: {
+      unitPrice: 5,
+      minQuantity: 25,
+      includes: [
+        'Printed in your two colours, logo inlaid flush',
+        'A clicky switch fitted — it arrives working',
+        'Compact 24mm cap, the size the price is built around',
+      ],
+    },
+  },
   {
     slug: 'twisty-vase',
     verified: true,

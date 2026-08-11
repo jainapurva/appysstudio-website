@@ -98,6 +98,76 @@ function escapeXml(text: string): string {
 }
 
 /**
+ * Slide a mesh along x, bounds included.
+ *
+ * Used to lay separate physical pieces out beside each other before they are
+ * written into one 3MF. Vertices are moved rather than an item transform being
+ * written, so the offset survives every reader — a slicer that ignores build
+ * transforms would otherwise stack the pieces back on top of one another.
+ */
+export function shiftX(mesh: Mesh, dx: number): Mesh {
+  if (dx === 0) return mesh;
+
+  const vertices = new Float64Array(mesh.vertices);
+  for (let i = 0; i < vertices.length; i += 3) vertices[i] += dx;
+
+  return {
+    vertices,
+    indices: mesh.indices,
+    triangleCount: mesh.triangleCount,
+    bounds: {
+      min: [mesh.bounds.min[0] + dx, mesh.bounds.min[1], mesh.bounds.min[2]],
+      max: [mesh.bounds.max[0] + dx, mesh.bounds.max[1], mesh.bounds.max[2]],
+    },
+  };
+}
+
+/**
+ * Clear space between two pieces laid out beside each other, in mm.
+ *
+ * Wide enough that a default 5mm brim on each does not run into its neighbour,
+ * since a merged brim is the one way two properly separated pieces still come
+ * off the plate stuck together.
+ */
+const PART_GAP_MM = 12;
+
+/**
+ * Lay assemblies out side by side along x.
+ *
+ * Parts sharing an `assembly` are left exactly where OpenSCAD put them: their
+ * registration is load-bearing, and an inlay that has drifted out of its pocket
+ * is a broken file. Everything else is a separate piece, and separate pieces
+ * that arrive intersecting are worse than merely untidy — the obvious fix in
+ * any slicer is Arrange, which would also pull the registered ones apart.
+ *
+ * Parts that declare no assembly all count as one, which leaves a model that
+ * never asked for a layout exactly as it was.
+ */
+export function layOutParts(parts: { mesh: Mesh; name: string; assembly?: string }[]): typeof parts {
+  const order: string[] = [];
+  for (const part of parts) {
+    const key = part.assembly ?? '';
+    if (!order.includes(key)) order.push(key);
+  }
+  if (order.length < 2) return parts;
+
+  const offsets = new Map<string, number>();
+  let cursor = 0;
+  for (const key of order) {
+    const group = parts.filter((part) => (part.assembly ?? '') === key);
+    const min = Math.min(...group.map((part) => part.mesh.bounds.min[0]));
+    const max = Math.max(...group.map((part) => part.mesh.bounds.max[0]));
+    offsets.set(key, cursor - min);
+    cursor += max - min + PART_GAP_MM;
+  }
+
+  return parts.map((part) => ({
+    ...part,
+    mesh: shiftX(part.mesh, offsets.get(part.assembly ?? '') ?? 0),
+  }));
+}
+
+/**
  * Wrap one or more meshes as a 3MF.
  *
  * Every mesh shares one transform, derived from their combined bounds, so a
@@ -108,9 +178,19 @@ function escapeXml(text: string): string {
  * The result sits on z=0 with its footprint centred, because slicers place a
  * 3MF where the file says and OpenSCAD models are authored around whatever
  * origin suited the geometry.
+ *
+ * Parts that name the same `assembly` are additionally wrapped in a
+ * `<components>` object, which is what makes their registration survive
+ * contact with a slicer. Sharing one transform is only enough while nothing
+ * moves the bodies, and something always does: the file is centred on the
+ * origin, every bed's origin is a corner, so every slicer has to reposition it.
+ * Bambu Studio moves top-level objects one at a time — sliced from three loose
+ * objects it put the inlay 25mm clear of the cap it fills — but reads a
+ * components object as one object with one part per body, kept together and
+ * still separately colourable.
  */
 export async function toThreeMf(
-  meshes: Mesh | { mesh: Mesh; name: string }[],
+  meshes: Mesh | { mesh: Mesh; name: string; assembly?: string }[],
   title: string
 ): Promise<Buffer> {
   const parts = Array.isArray(meshes) ? meshes : [{ mesh: meshes, name: title }];
@@ -157,8 +237,50 @@ export async function toThreeMf(
     lines.push('    </triangles>', '   </mesh>', '  </object>');
   });
 
+  // One build item per assembly, in the order the parts were given. A part
+  // that named no assembly stands alone, which leaves a model that never asked
+  // to be grouped exactly as it was.
+  const items: number[] = [];
+  const wrapped = new Map<string, number[]>();
+  parts.forEach(({ assembly }, index) => {
+    if (!assembly) {
+      items.push(index + 1);
+      return;
+    }
+    const group = wrapped.get(assembly);
+    if (group) {
+      group.push(index + 1);
+    } else {
+      wrapped.set(assembly, [index + 1]);
+      items.push(-wrapped.size);
+    }
+  });
+
+  const wrapperId = new Map<string, number>();
+  let nextId = parts.length + 1;
+  for (const [assembly, members] of wrapped) {
+    if (members.length < 2) continue;
+    wrapperId.set(assembly, nextId);
+    // Named after the first body in the group: 3MF components carry no name of
+    // their own, and Bambu Studio labels the parts after their parent.
+    const name = parts[members[0] - 1].name;
+    lines.push(`  <object id="${nextId}" type="model" name="${escapeXml(name)}">`, '   <components>');
+    for (const member of members) lines.push(`    <component objectid="${member}"/>`);
+    lines.push('   </components>', '  </object>');
+    nextId += 1;
+  }
+
   lines.push(' </resources>', ' <build>');
-  parts.forEach((_, index) => lines.push(`  <item objectid="${index + 1}"/>`));
+  const groups = [...wrapped.keys()];
+  for (const item of items) {
+    if (item > 0) {
+      lines.push(`  <item objectid="${item}"/>`);
+      continue;
+    }
+    const assembly = groups[-item - 1];
+    const members = wrapped.get(assembly)!;
+    lines.push(`  <item objectid="${wrapperId.get(assembly) ?? members[0]}"/>`);
+  }
   lines.push(' </build>', '</model>', '');
 
   const entries: ZipEntry[] = [

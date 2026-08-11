@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import ParametricStudio from '@/components/ParametricStudio';
+import BulkOrderCard from '@/components/BulkOrderCard';
 import { LISTED_MODELS, findListedModel } from '@/lib/parametric/models';
 
 // One page for every model in the manifest. Adding a .scad file and an entry
@@ -68,6 +69,17 @@ export default async function ParametricModelPage({
         notes={model.notes}
         printHint={model.printHint}
       />
+
+      {/* Only models we will actually make in quantity declare this. It rides
+          on this page, so the verified gate covers the paid path too. */}
+      {model.bulkOrder && (
+        <BulkOrderCard
+          modelName={model.name}
+          unitPrice={model.bulkOrder.unitPrice}
+          minQuantity={model.bulkOrder.minQuantity}
+          includes={model.bulkOrder.includes}
+        />
+      )}
     </main>
   );
 }

@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Loader2, RotateCcw, Box as BoxIcon } from 'lucide-react';
 import type { ParamDef } from '@/lib/parametric/spec';
+import type { Contour } from '@/lib/parametric/trace';
 import ModelPreview from '@/components/ModelPreview';
+import LogoField from '@/components/LogoField';
 
 interface Props {
   slug: string;
@@ -16,14 +18,27 @@ type Values = Record<string, number | boolean | string>;
 
 function defaultsOf(params: ParamDef[]): Values {
   const out: Values = {};
-  for (const p of params) out[p.key] = p.default;
+  // A logo has no value to default — it arrives as geometry or not at all.
+  for (const p of params) if (p.kind !== 'logo') out[p.key] = p.default;
   return out;
 }
 
 function toQuery(params: ParamDef[], values: Values): string {
   const qs = new URLSearchParams();
-  for (const p of params) qs.set(p.key, String(values[p.key]));
+  for (const p of params) {
+    if (p.kind === 'logo') continue;
+    qs.set(p.key, String(values[p.key]));
+  }
   return qs.toString();
+}
+
+function plainParams(params: ParamDef[], values: Values): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const p of params) {
+    if (p.kind === 'logo') continue;
+    out[p.key] = String(values[p.key]);
+  }
+  return out;
 }
 
 export default function ParametricStudio({ slug, params, notes, printHint }: Props) {
@@ -38,6 +53,16 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [logo, setLogo] = useState<Contour[] | null>(null);
+
+  const logoParam = useMemo(() => params.find((p) => p.kind === 'logo'), [params]);
+  // Artwork travels in a POST body, so it cannot be part of the query. This
+  // stands in for it as a dependency: a new trace changes the point count and
+  // the first coordinate, which is enough to know the preview is stale.
+  const logoKey = useMemo(
+    () => (logo ? `${logo.length}:${logo.reduce((n, c) => n + c.length, 0)}:${logo[0]?.[0] ?? ''}` : ''),
+    [logo]
+  );
 
   const query = useMemo(() => toQuery(params, settled), [params, settled]);
   const liveQuery = useMemo(() => toQuery(params, values), [params, values]);
@@ -55,7 +80,20 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
     let cancelled = false;
 
     setBusy(true);
-    fetch(`/api/parametric/${slug}?${query}&preview=1`, { signal: controller.signal })
+    const request = logoParam
+      ? fetch(`/api/parametric/${slug}`, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            params: plainParams(params, settled),
+            logo,
+            preview: true,
+          }),
+        })
+      : fetch(`/api/parametric/${slug}?${query}&preview=1`, { signal: controller.signal });
+
+    request
       .then(async (res) => {
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
@@ -81,7 +119,7 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
       cancelled = true;
       controller.abort();
     };
-  }, [slug, query]);
+  }, [slug, query, logoParam, logoKey, params, settled, logo]);
 
   const set = useCallback((key: string, value: number | boolean | string) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -91,7 +129,13 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
     if (downloading) return;
     setDownloading(format);
     try {
-      const res = await fetch(`/api/parametric/${slug}?${toQuery(params, values)}&format=${format}`);
+      const res = logoParam
+        ? await fetch(`/api/parametric/${slug}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ params: plainParams(params, values), logo, format }),
+          })
+        : await fetch(`/api/parametric/${slug}?${toQuery(params, values)}&format=${format}`);
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || 'Could not build that one.');
@@ -187,6 +231,15 @@ export default function ParametricStudio({ slug, params, notes, printHint }: Pro
         </div>
 
         <div className="space-y-5">
+          {logoParam && logoParam.kind === 'logo' && (
+            <LogoField
+              label={logoParam.label}
+              help={logoParam.help}
+              placeholder={logoParam.placeholder}
+              value={logo}
+              onChange={(contours) => setLogo(contours)}
+            />
+          )}
           {params.map((param) => (
             <Field key={param.key} param={param} value={values[param.key]} onChange={set} />
           ))}
@@ -216,6 +269,10 @@ function Field({
   onChange: (key: string, value: number | boolean | string) => void;
 }) {
   const id = `p-${param.key}`;
+
+  if (param.kind === 'logo') {
+    return null;   // rendered separately: it owns state the value map cannot hold
+  }
 
   if (param.kind === 'bool') {
     return (
