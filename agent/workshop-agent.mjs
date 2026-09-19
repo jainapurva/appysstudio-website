@@ -165,15 +165,31 @@ function sweepSessions() {
 // it from the full transcript the website sends (which also rebuilds a
 // session lost to a restart or the cleanup).
 async function runInSession(job, id, onText, signal) {
+  const dir = path.join(SESSIONS_DIR, id);
+  const fresh = () => {
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    // Mark it started BEFORE the run: even if this run dies, Claude has
+    // claimed the session id inside dir, so the next message must resume.
+    markStarted(id);
+    return runClaude({ system: job.system, prompt: job.transcript || job.prompt }, { id, resume: false }, onText, signal);
+  };
+
   if (sessionStarted(id)) {
-    const first = await runClaude({ system: job.system, prompt: job.prompt }, { id, resume: true }, onText, signal);
-    if (!first.error || first.streamed || first.error === 'aborted' || first.error.startsWith('config:')) return first;
-    log(`session ${id.slice(0, 8)} could not resume (${first.error.slice(0, 80)}); starting it again`);
-    fs.rmSync(path.join(SESSIONS_DIR, id), { recursive: true, force: true });
+    const again = await runClaude({ system: job.system, prompt: job.prompt }, { id, resume: true }, onText, signal);
+    if (!again.error || again.streamed || again.error === 'aborted' || again.error.startsWith('config:')) return again;
+    log(`session ${id.slice(0, 8)} could not resume (${again.error.slice(0, 80)}); starting it again`);
+    fs.rmSync(dir, { recursive: true, force: true });
   }
-  const fresh = await runClaude({ system: job.system, prompt: job.transcript || job.prompt }, { id, resume: false }, onText, signal);
-  if (!fresh.error) markStarted(id);
-  return fresh;
+
+  const first = await fresh();
+  // A run that died before Claude wrote its transcript leaves the id claimed
+  // but unresumable; clearing the folder releases it.
+  if (first.error && !first.streamed && /already in use/i.test(first.error)) {
+    log(`session ${id.slice(0, 8)} id was stuck; clearing it and retrying`);
+    fs.rmSync(dir, { recursive: true, force: true });
+    return fresh();
+  }
+  return first;
 }
 
 // ------------------------------------------------------------------- http
