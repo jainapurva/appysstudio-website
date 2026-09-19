@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Sparkles, Send, Box, Download, ExternalLink, RotateCcw, Loader2, CheckCircle2, Copy, ClipboardPaste } from 'lucide-react';
+import { Sparkles, Send, Box, Download, ExternalLink, RotateCcw, Loader2, CheckCircle2, Copy, ClipboardPaste, Plus } from 'lucide-react';
 import { DESIGN_TEMPLATES, FOLLOW_UPS, FILAMENT_COLORS, type DesignKind } from '@/lib/workshop-learn';
 import { extractCode, explanation, type ChatTurn } from '@/lib/workshop-ai';
 import { playgroundUrl, findNumbers, setNumber } from '@/lib/playground';
@@ -196,6 +196,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   }
 
   function startOver() {
+    if (code && !sent && !window.confirm('Start a new design? This one disappears. Send it to the print station first if you want it printed.')) return;
     setSessionId('');
     setTurns([]); setCode(''); setAiCode(''); setNote(''); setLive(''); setError('');
     setViewerUrl(''); setSent('');
@@ -317,6 +318,17 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
 
       {code && (
         <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl bg-paper2 p-3">
+            <p className="font-display text-xl text-ink mr-auto">
+              Your {DESIGN_TEMPLATES[kind].label.replace(/^(A|The|My) /, '').toLowerCase()}
+            </p>
+            <button
+              onClick={startOver}
+              className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark text-white font-semibold px-4 py-2 rounded-xl"
+            >
+              <Plus className="w-4 h-4" /> Design something else
+            </button>
+          </div>
           {note && (
             <div className="rounded-xl bg-white p-4 shadow-[0_2px_0_rgba(61,47,36,.1)]">
               <p className="text-sm font-semibold text-clay mb-1">Claude says</p>
@@ -466,7 +478,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
               <button onClick={download} className="inline-flex items-center gap-2 bg-white border border-ink2/20 font-semibold px-4 py-2 rounded-xl">
                 <Download className="w-4 h-4" /> Download .scad
               </button>
-              <button onClick={startOver} className="inline-flex items-center gap-2 text-ink2 font-semibold px-3 py-2">
+              <button onClick={startOver} className="inline-flex items-center gap-2 bg-white border border-ink2/30 hover:border-clay text-ink font-semibold px-4 py-2 rounded-xl">
                 <RotateCcw className="w-4 h-4" /> Start a new design
               </button>
             </div>
