@@ -47,6 +47,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   const [followUp, setFollowUp] = useState('');
   const [accessCode, setAccessCode] = useState('');
   const [needCode, setNeedCode] = useState(false);
+  const [codeRequired, setCodeRequired] = useState(false);
   const [viewerUrl, setViewerUrl] = useState('');
   const [viewerKey, setViewerKey] = useState(0);
   const [name, setName] = useState('');
@@ -63,7 +64,10 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   useEffect(() => {
     fetch('/api/workshop/design')
       .then(r => r.json())
-      .then((j: { aiEnabled?: boolean }) => setAiOn(Boolean(j.aiEnabled)))
+      .then((j: { aiEnabled?: boolean; codeRequired?: boolean }) => {
+        setAiOn(Boolean(j.aiEnabled));
+        setCodeRequired(Boolean(j.codeRequired));
+      })
       .catch(() => setAiOn(false));
   }, []);
 
@@ -224,7 +228,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   return (
     <div className="space-y-6">
       {/* Workshop code */}
-      {aiOn !== false && (
+      {aiOn !== false && (codeRequired || needCode) && (
       <div className={`rounded-xl p-4 ${needCode ? 'bg-butter' : 'bg-paper2'}`}>
         <label className="text-sm font-semibold text-ink block mb-1">Workshop code (it&apos;s on the board)</label>
         <input

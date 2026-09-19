@@ -114,7 +114,7 @@ export const DESIGN_TEMPLATES: Record<DesignKind, { label: string; prompt: strin
 - Shape: 17 mm square at the bottom, 13 mm square at the top, 8 mm tall, rounded corners.
 - Hollow underneath with 1.5 mm walls, so it fits over a keyboard switch.
 - Inside, in the middle: a round post 5.6 mm wide and 3.8 mm long coming down from the roof, with a plus-shaped hole in it. Each arm of the plus is 4.3 mm long and 1.3 mm wide, and the hole is 3.8 mm deep. This grips the switch.
-- On top: the letter "M", bold, 9 mm tall, raised 1.2 mm above the top face.
+- On top: the letter "M", bold, 9 mm tall, ADDED on top of the cap so it sticks up 1.2 mm above the top face. Do not cut or engrave the letter into the cap: it must be a separate raised part, added with union, never inside the difference that hollows the cap.
 - It prints standing the right way up, with the open side down on the bed and the letter facing up. Supports inside the cap are fine.
 - Put every size in a variable at the top with a short comment.`,
   },
@@ -139,7 +139,7 @@ The base:
 The keycaps (one for each letter of MAYA):
 - 17 mm square at the bottom, 13 mm at the top, 8 mm tall, hollow with 1.5 mm walls.
 - Inside: a 5.6 mm round post, 3.8 mm long, with a plus-shaped hole (arms 4.3 x 1.3 mm), 3.8 mm deep.
-- The letter on top, bold, 9 mm tall, raised 1.2 mm above the top face.
+- The letter on top, bold, 9 mm tall, ADDED on top so it sticks up 1.2 mm above the top face (union, never inside the difference that hollows the cap, so it is raised and not engraved).
 Lay the base and all the keycaps next to each other, ready to print, all standing the right way up (keycaps open side down, letters facing up), 5 mm apart.
 Put every size in a variable at the top with a short comment.`,
   },

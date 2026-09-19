@@ -51,9 +51,17 @@ describe('POST /api/workshop/design', () => {
 
   it('reports the AI as off without a key, so the page uses paste mode', async () => {
     vi.stubEnv('ANTHROPIC_API_KEY', '');
-    expect(await (await GET()).json()).toEqual({ aiEnabled: false });
+    expect(await (await GET()).json()).toEqual({ aiEnabled: false, codeRequired: true });
     vi.stubEnv('ANTHROPIC_API_KEY', 'test-key');
-    expect(await (await GET()).json()).toEqual({ aiEnabled: true });
+    expect(await (await GET()).json()).toEqual({ aiEnabled: true, codeRequired: true });
+  });
+
+  it('asks for no code, and needs none, when WORKSHOP_AI_CODE is unset', async () => {
+    vi.stubEnv('WORKSHOP_AI_CODE', '');
+    expect(await (await GET()).json()).toEqual({ aiEnabled: true, codeRequired: false });
+    streamMock.mockReturnValue(fakeStream(['```openscad\ncube(1);\n```']));
+    const res = await POST(request({ messages: [{ role: 'user', content: 'Make a keycap' }] }));
+    expect(res.status).toBe(200);
   });
 
   it('is off without a key', async () => {
@@ -117,13 +125,13 @@ describe('POST /api/workshop/design via the claude -p agent', () => {
   it('turns the AI on when the agent answers its health check', async () => {
     const fetchMock = vi.fn(async () => new Response('{"ok":true}'));
     globalThis.fetch = fetchMock as unknown as typeof fetch;
-    expect(await (await GET()).json()).toEqual({ aiEnabled: true });
+    expect(await (await GET()).json()).toEqual({ aiEnabled: true, codeRequired: true });
     expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe('http://agent.test:8787/health');
   });
 
   it('falls back to paste mode when the agent or its tunnel is down', async () => {
     globalThis.fetch = vi.fn(async () => { throw new Error('ECONNREFUSED'); }) as unknown as typeof fetch;
-    expect(await (await GET()).json()).toEqual({ aiEnabled: false });
+    expect(await (await GET()).json()).toEqual({ aiEnabled: false, codeRequired: true });
   });
 
   it('forwards the system prompt and flattened chat, and streams the agent reply through', async () => {

@@ -24,7 +24,6 @@ function backend(): 'agent' | 'api' | null {
 async function aiEnabled(): Promise<boolean> {
   const b = backend();
   if (!b) return false;
-  if (process.env.NODE_ENV === 'production' && !process.env.WORKSHOP_AI_CODE) return false;
   // If the agent's server or tunnel is down, offer paste mode instead of an
   // "Ask Claude" button that can only fail.
   return b === 'agent' ? agentUp() : true;
@@ -78,11 +77,15 @@ async function viaAgent(messages: ChatTurn[], sessionId: string | null): Promise
   return new Response(res.body, { headers: STREAM_HEADERS });
 }
 
-// GET /api/workshop/design → { aiEnabled }. When it's off, the page switches to
-// paste mode: the instructor runs the prompt in their own Claude on the big
-// screen and the code is pasted back in.
+// GET /api/workshop/design → { aiEnabled, codeRequired }. When the AI is off,
+// the page switches to paste mode: the instructor runs the prompt in their own
+// Claude on the big screen and the code is pasted back in. A workshop code is
+// only asked for when WORKSHOP_AI_CODE is set.
 export async function GET() {
-  return NextResponse.json({ aiEnabled: await aiEnabled() });
+  return NextResponse.json({
+    aiEnabled: await aiEnabled(),
+    codeRequired: Boolean(process.env.WORKSHOP_AI_CODE),
+  });
 }
 
 // POST /api/workshop/design  { messages: ChatTurn[], accessCode?: string }
@@ -93,17 +96,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'The AI designer is not switched on yet.' }, { status: 503 });
   }
 
-  // The endpoint spends real money, so it only answers during a workshop:
-  // kids type the code the instructor writes on the board.
+  // A workshop code is optional: set WORKSHOP_AI_CODE to make kids type the
+  // code from the board, leave it unset to let anyone on the page ask (the
+  // rate limits below are then the only guard).
   const required = process.env.WORKSHOP_AI_CODE;
   let body: { messages?: unknown; accessCode?: unknown; sessionId?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Bad request.' }, { status: 400 });
-  }
-  if (process.env.NODE_ENV === 'production' && !required) {
-    return NextResponse.json({ error: 'The AI designer is closed right now.' }, { status: 503 });
   }
   if (required && String(body.accessCode ?? '').trim().toLowerCase() !== required.trim().toLowerCase()) {
     return NextResponse.json({ error: 'Type the workshop code from the board.', code: 'ACCESS_CODE' }, { status: 401 });
