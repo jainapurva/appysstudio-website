@@ -151,7 +151,7 @@ All optional for local dev (features gracefully degrade):
 - `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET` - Apple OAuth
 - `ADMIN_PASSWORD` - Analytics page (defaults to `printcraft2025`)
 - `NEXTAUTH_SECRET` - JWT signing (auto-generated in dev)
-- `ANTHROPIC_API_KEY` - Claude API key for the `/workshop/learn` AI designer (off without it)
+- `ANTHROPIC_API_KEY` - Claude API key for the `/workshop/start` AI designer (off without it)
 - `WORKSHOP_AI_CODE` - the code kids type to use the AI designer; required in production (the route refuses without it)
 
 ## Site Structure & Navigation
@@ -217,7 +217,7 @@ Landing + paid registration for the Aug 22, 2026 3D printing workshop.
   `sendWorkshopRegistrationPendingToOwner` (used when Square isn't configured —
   registration is saved and flagged for manual payment rather than failing).
 
-## Workshop Learn (`/workshop/learn`)
+## Workshop Learn (`/workshop/start`)
 Kid-paced, 9-step version of the workshop: what 3D printing is, printers, filaments (with a quiz),
 CAD, prompting with SNAP, **design with AI**, check the AI, send to print. Content lives in
 `lib/workshop-learn.ts`; `?step=<id>` jumps to a step (e.g. `?step=design`).
@@ -228,7 +228,7 @@ CAD, prompting with SNAP, **design with AI**, check the AI, send to print. Conte
 - **3D view** = the OpenSCAD Playground (ochafik.com/openscad2) in an iframe; the whole design travels
   in the URL fragment (`lib/playground.ts`). A page that already has the Playground open ignores a new
   fragment, so the iframe is remounted on every update.
-- **Print station** at `/workshop/learn/station` (ADMIN_PASSWORD) lists designs kids sent;
+- **Print station** at `/workshop/start/station` (ADMIN_PASSWORD) lists designs kids sent;
   stored in `data/workshop-designs.json` via `/api/workshop/designs`.
 
 ## Recent Changes (newest first)

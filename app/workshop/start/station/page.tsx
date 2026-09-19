@@ -12,7 +12,7 @@ interface Design {
   createdAt: string;
 }
 
-// The print station's inbox: every design kids sent from /workshop/learn.
+// The print station's inbox: every design kids sent from /workshop/start.
 export default function StationPage() {
   const [pwd, setPwd] = useState('');
   const [designs, setDesigns] = useState<Design[] | null>(null);

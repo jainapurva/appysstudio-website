@@ -1,7 +1,7 @@
 # Workshop agent (`claude -p` on a server)
 
 A tiny, dependency-free HTTP server that runs `claude -p` for each kid's prompt on
-`/workshop/learn` and streams Claude's text back. The website forwards to it
+`/workshop/start` and streams Claude's text back. The website forwards to it
 when `WORKSHOP_AGENT_URL` and `WORKSHOP_AGENT_TOKEN` are set.
 
 **It runs on an Anthropic API key only.** `claude -p --bare` reads only

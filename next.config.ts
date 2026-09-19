@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
     return [
       // /keycaps shipped on its own before the generators were grouped under
       // one nav entry; keep the old link working.
+      // The workshop moved to /workshop/start; keep links and QR codes made
+      // for the old address working (query strings like ?step= carry over).
+      { source: '/workshop/learn', destination: '/workshop/start', permanent: true },
+      { source: '/workshop/learn/station', destination: '/workshop/start/station', permanent: true },
       {
         source: '/keycaps',
         destination: '/3d-generator/parametric/keycaps',

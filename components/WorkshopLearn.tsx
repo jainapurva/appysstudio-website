@@ -212,7 +212,7 @@ function StepBody({ id }: { id: string }) {
             ))}
           </ol>
           <p className="bg-butter/60 rounded-xl p-4 text-ink">
-            <b>Keep making at home:</b> this page stays open for you at appysstudio.com/workshop/learn, and our
+            <b>Keep making at home:</b> this page stays open for you at appysstudio.com/workshop/start, and our
             free generators are at <Link href="/3d-generator" className="underline">appysstudio.com/3d-generator</Link>.
           </p>
         </div>

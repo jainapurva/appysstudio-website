@@ -1,4 +1,4 @@
-// Shared pieces of the /workshop/learn AI designer: the system prompt Claude
+// Shared pieces of the /workshop/start AI designer: the system prompt Claude
 // runs under, request validation, and pulling the OpenSCAD out of a reply.
 
 export const WORKSHOP_AI_MODEL = 'claude-opus-5';

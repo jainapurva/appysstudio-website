@@ -1,4 +1,4 @@
-// Content for /workshop/learn — the kid-paced, step-by-step version of the
+// Content for /workshop/start — the kid-paced, step-by-step version of the
 // workshop. Copy lives here (like lib/workshop.ts) so the page stays layout only.
 
 export interface LearnStep {
