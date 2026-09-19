@@ -38,8 +38,12 @@ const STREAM_HEADERS = {
   'X-Accel-Buffering': 'no',
 };
 
-// Forward to the agent and pass its text stream straight through.
-async function viaAgent(messages: ChatTurn[]): Promise<Response> {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Forward to the agent and pass its text stream straight through. With a
+// sessionId the agent resumes the kid's Claude session and only needs the new
+// message; the full transcript rides along so it can rebuild a lost session.
+async function viaAgent(messages: ChatTurn[], sessionId: string | null): Promise<Response> {
   const base = agentBase();
   let res: Response;
   try {
@@ -49,12 +53,20 @@ async function viaAgent(messages: ChatTurn[]): Promise<Response> {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.WORKSHOP_AGENT_TOKEN}`,
       },
-      body: JSON.stringify({ system: WORKSHOP_SYSTEM_PROMPT, prompt: flattenConversation(messages) }),
+      body: JSON.stringify({
+        system: WORKSHOP_SYSTEM_PROMPT,
+        prompt: sessionId ? messages[messages.length - 1].content : flattenConversation(messages),
+        transcript: flattenConversation(messages),
+        sessionId,
+      }),
       signal: AbortSignal.timeout(240_000),
     });
   } catch (err) {
     console.error('workshop design: agent unreachable', err);
     return NextResponse.json({ error: 'The AI helper is offline. Ask your instructor.' }, { status: 502 });
+  }
+  if (res.status === 409) {
+    return NextResponse.json({ error: 'Claude is still working on your last question. Wait for it to finish.' }, { status: 409 });
   }
   if (res.status === 503) {
     return NextResponse.json({ error: 'Lots of designing going on! Wait a minute and try again.' }, { status: 429 });
@@ -84,7 +96,7 @@ export async function POST(req: NextRequest) {
   // The endpoint spends real money, so it only answers during a workshop:
   // kids type the code the instructor writes on the board.
   const required = process.env.WORKSHOP_AI_CODE;
-  let body: { messages?: unknown; accessCode?: unknown };
+  let body: { messages?: unknown; accessCode?: unknown; sessionId?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -112,7 +124,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (backend() === 'agent') return viaAgent(messages);
+  const sessionId = typeof body.sessionId === 'string' && UUID.test(body.sessionId) ? body.sessionId.toLowerCase() : null;
+  if (backend() === 'agent') return viaAgent(messages, sessionId);
 
   const client = new Anthropic();
   const encoder = new TextEncoder();

@@ -150,6 +150,34 @@ describe('POST /api/workshop/design via the claude -p agent', () => {
     expect(sent.prompt.endsWith("Reply to the kid's last message.")).toBe(true);
   });
 
+  it('with a session, sends just the new message plus the transcript for rebuilding', async () => {
+    const fetchMock = vi.fn(async () => new Response('ok'));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const id = '0f8fad5b-d9cb-469f-a165-70867728950e';
+    await POST(request({
+      messages: [
+        { role: 'user', content: 'Make a keycap' },
+        { role: 'assistant', content: '```openscad\ncube(17);\n```' },
+        { role: 'user', content: 'Make it rounder' },
+      ],
+      accessCode: 'CLICK',
+      sessionId: id.toUpperCase(),
+    }));
+    const sent = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
+    expect(sent.sessionId).toBe(id);
+    expect(sent.prompt).toBe('Make it rounder');
+    expect(sent.transcript).toContain('KID:\nMake a keycap');
+  });
+
+  it('ignores a malformed session id and tells a double-click to wait', async () => {
+    const fetchMock = vi.fn(async () => new Response('still thinking', { status: 409 }));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const res = await POST(request({ ...kidAsk, sessionId: '../../etc' }));
+    const sent = JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body));
+    expect(sent.sessionId).toBeNull();
+    expect(res.status).toBe(409);
+  });
+
   it('maps a busy agent to 429 and an unreachable one to 502', async () => {
     globalThis.fetch = vi.fn(async () => new Response('busy', { status: 503 })) as unknown as typeof fetch;
     expect((await POST(request(kidAsk))).status).toBe(429);

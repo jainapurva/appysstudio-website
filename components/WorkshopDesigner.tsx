@@ -56,6 +56,9 @@ export default function WorkshopDesigner() {
   const [aiOn, setAiOn] = useState<boolean | null>(null);
   const [pasted, setPasted] = useState('');
   const [copied, setCopied] = useState('');
+  // One Claude session per design on the agent's server, like a WhatsApp chat
+  // in Swayat: the first ask starts it, follow-ups resume it.
+  const [sessionId, setSessionId] = useState('');
 
   useEffect(() => {
     fetch('/api/workshop/design')
@@ -69,15 +72,15 @@ export default function WorkshopDesigner() {
     const saved = storageGet(DESIGN_KEY);
     if (saved) {
       try {
-        const d = JSON.parse(saved) as { code: string; kind: DesignKind };
-        if (d.code) { setCode(d.code); setAiCode(d.code); setKind(d.kind); }
+        const d = JSON.parse(saved) as { code: string; kind: DesignKind; sessionId?: string };
+        if (d.code) { setCode(d.code); setAiCode(d.code); setKind(d.kind); setSessionId(d.sessionId ?? ''); }
       } catch { /* ignore a bad save */ }
     }
   }, []);
 
   useEffect(() => {
-    if (code) storageSet(DESIGN_KEY, JSON.stringify({ code, kind }));
-  }, [code, kind]);
+    if (code) storageSet(DESIGN_KEY, JSON.stringify({ code, kind, sessionId }));
+  }, [code, kind, sessionId]);
 
   const numbers = useMemo(() => findNumbers(code), [code]);
 
@@ -105,13 +108,16 @@ export default function WorkshopDesigner() {
       ? `Here is my design${edited ? ' now (I changed some numbers)' : ''}:\n\`\`\`openscad\n${code}\`\`\`\n\n${text}`
       : text;
     const messages: ChatTurn[] = [...prior, { role: 'user', content }];
+    // A fresh design, or a trimmed conversation, starts a new session.
+    const session = fresh || prior.length === 0 || !sessionId ? crypto.randomUUID() : sessionId;
+    setSessionId(session);
 
     setBusy(true); setError(''); setNote(''); setLive(''); setSent('');
     try {
       const res = await fetch('/api/workshop/design', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, accessCode }),
+        body: JSON.stringify({ messages, accessCode, sessionId: session }),
       });
       if (!res.ok || !res.body) {
         const j = await res.json().catch(() => ({} as { error?: string; code?: string }));
@@ -180,6 +186,7 @@ export default function WorkshopDesigner() {
   }
 
   function startOver() {
+    setSessionId('');
     setTurns([]); setCode(''); setAiCode(''); setNote(''); setLive(''); setError('');
     setViewerUrl(''); setSent('');
     storageSet(DESIGN_KEY, '');

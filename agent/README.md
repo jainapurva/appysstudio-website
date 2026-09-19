@@ -10,6 +10,15 @@ gets an empty private config dir and no tools, and the agent refuses to start
 without a key. Claude Code's terms don't allow serving other people's requests
 from a Pro/Max login, so don't point it at one.
 
+## Sessions (the Swayat pattern)
+Each design on the website gets a session ID. The kid's first message starts a
+Claude session in `~/workshop-agent/sessions/<id>/` (`claude -p --session-id`);
+follow-ups resume it (`--resume`), so Claude remembers the conversation on the
+server. The website also sends the full transcript, so a session lost to a
+restart or the 48-hour cleanup is rebuilt automatically. One run per session at
+a time (a double-click gets "still thinking"). `SESSIONS_DIR` and
+`SESSION_TTL_HOURS` override the defaults.
+
 ## Run it
 Needs Node 18+ and the Claude Code CLI (`claude`) on the PATH.
 
