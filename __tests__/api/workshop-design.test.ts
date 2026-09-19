@@ -18,7 +18,7 @@ vi.mock('@anthropic-ai/sdk', () => {
   return { default: Anthropic };
 });
 
-import { POST } from '@/app/api/workshop/design/route';
+import { GET, POST } from '@/app/api/workshop/design/route';
 
 function fakeStream(chunks: string[], stopReason = 'end_turn') {
   return {
@@ -48,7 +48,14 @@ describe('POST /api/workshop/design', () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  it('is off when no API key is configured', async () => {
+  it('reports the AI as off without a key, so the page uses paste mode', async () => {
+    vi.stubEnv('ANTHROPIC_API_KEY', '');
+    expect(await (await GET()).json()).toEqual({ aiEnabled: false });
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-key');
+    expect(await (await GET()).json()).toEqual({ aiEnabled: true });
+  });
+
+  it('is off without a key', async () => {
     vi.stubEnv('ANTHROPIC_API_KEY', '');
     const res = await POST(request(kidAsk));
     expect(res.status).toBe(503);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Sparkles, Send, Box, Download, ExternalLink, RotateCcw, Loader2, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Send, Box, Download, ExternalLink, RotateCcw, Loader2, CheckCircle2, Copy, ClipboardPaste } from 'lucide-react';
 import { DESIGN_TEMPLATES, FOLLOW_UPS, type DesignKind } from '@/lib/workshop-learn';
 import { extractCode, explanation, type ChatTurn } from '@/lib/workshop-ai';
 import { playgroundUrl, findNumbers, setNumber } from '@/lib/playground';
@@ -14,6 +14,24 @@ function storageGet(key: string): string {
 }
 function storageSet(key: string, value: string) {
   try { localStorage.setItem(key, value); } catch { /* private mode: fine */ }
+}
+
+function PasteBox({ value, onChange, onUse, label }: { value: string; onChange: (v: string) => void; onUse: () => void; label: string }) {
+  return (
+    <div className="rounded-xl bg-paper2 p-4">
+      <label className="text-sm font-semibold text-ink block mb-1">{label}</label>
+      <textarea
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        rows={6}
+        className="w-full rounded-lg border border-ink2/30 p-3 font-mono text-xs bg-white"
+        placeholder="Paste Claude's whole answer here. The code will be picked out of it."
+      />
+      <button onClick={onUse} className="mt-2 inline-flex items-center gap-2 bg-sage hover:bg-sage-dark text-white font-semibold px-4 py-2 rounded-xl">
+        <ClipboardPaste className="w-4 h-4" /> Show my design
+      </button>
+    </div>
+  );
 }
 
 export default function WorkshopDesigner() {
@@ -33,6 +51,18 @@ export default function WorkshopDesigner() {
   const [viewerKey, setViewerKey] = useState(0);
   const [name, setName] = useState('');
   const [sent, setSent] = useState('');
+  // null while checking; false = no AI connection, so the instructor runs the
+  // prompt in their own Claude and the code is pasted back in.
+  const [aiOn, setAiOn] = useState<boolean | null>(null);
+  const [pasted, setPasted] = useState('');
+  const [copied, setCopied] = useState('');
+
+  useEffect(() => {
+    fetch('/api/workshop/design')
+      .then(r => r.json())
+      .then((j: { aiEnabled?: boolean }) => setAiOn(Boolean(j.aiEnabled)))
+      .catch(() => setAiOn(false));
+  }, []);
 
   useEffect(() => {
     setAccessCode(storageGet(CODE_KEY));
@@ -121,6 +151,34 @@ export default function WorkshopDesigner() {
     }
   }
 
+  async function copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Older browsers: fall back to a hidden textarea.
+      const t = document.createElement('textarea');
+      t.value = text; document.body.appendChild(t); t.select();
+      document.execCommand('copy'); t.remove();
+    }
+    setCopied(label);
+    setTimeout(() => setCopied(''), 2500);
+  }
+
+  function changeRequest(text: string) {
+    return `Here is my design:\n\`\`\`openscad\n${code}\`\`\`\n\n${text.trim()}`;
+  }
+
+  async function applyPasted() {
+    const fenced = extractCode(pasted);
+    const newCode = fenced ?? (pasted.trim() ? pasted.trim() + '\n' : '');
+    if (!newCode) { setError('Paste the code from Claude first.'); return; }
+    setError(''); setSent('');
+    setCode(newCode); setAiCode(newCode); setTurns([]);
+    setNote(fenced ? explanation(pasted) : '');
+    setPasted(''); setFollowUp('');
+    await show(newCode);
+  }
+
   function startOver() {
     setTurns([]); setCode(''); setAiCode(''); setNote(''); setLive(''); setError('');
     setViewerUrl(''); setSent('');
@@ -157,6 +215,7 @@ export default function WorkshopDesigner() {
   return (
     <div className="space-y-6">
       {/* Workshop code */}
+      {aiOn !== false && (
       <div className={`rounded-xl p-4 ${needCode ? 'bg-butter' : 'bg-paper2'}`}>
         <label className="text-sm font-semibold text-ink block mb-1">Workshop code (it&apos;s on the board)</label>
         <input
@@ -166,6 +225,7 @@ export default function WorkshopDesigner() {
           placeholder="e.g. CLICK"
         />
       </div>
+      )}
 
       {!code && (
         <>
@@ -197,14 +257,33 @@ export default function WorkshopDesigner() {
               rows={12}
               className="w-full rounded-xl border border-ink2/30 p-3 font-mono text-sm bg-white"
             />
-            <button
-              onClick={() => ask(prompt, true)}
-              disabled={busy}
-              className="mt-3 inline-flex items-center gap-2 bg-clay hover:bg-clay-dark disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl"
-            >
-              {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-              {busy ? 'Claude is designing…' : 'Ask Claude to design it'}
-            </button>
+            {aiOn === false ? (
+              <div className="mt-3 space-y-3">
+                <button
+                  onClick={() => copyText(prompt, 'prompt')}
+                  className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark text-white font-semibold px-5 py-3 rounded-xl"
+                >
+                  <Copy className="w-5 h-5" /> {copied === 'prompt' ? 'Copied!' : 'Copy my prompt'}
+                </button>
+                <p className="text-sm text-ink2">Show your prompt to your instructor. They&apos;ll ask Claude on the big screen, then paste the answer below.</p>
+                <PasteBox value={pasted} onChange={setPasted} onUse={applyPasted} label="Paste the code from Claude" />
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => ask(prompt, true)}
+                  disabled={busy}
+                  className="mt-3 inline-flex items-center gap-2 bg-clay hover:bg-clay-dark disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl"
+                >
+                  {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                  {busy ? 'Claude is designing…' : 'Ask Claude to design it'}
+                </button>
+                <details className="mt-4">
+                  <summary className="text-sm text-ink2 cursor-pointer">Got code from Claude another way? Paste it instead</summary>
+                  <div className="mt-2"><PasteBox value={pasted} onChange={setPasted} onUse={applyPasted} label="Paste the code from Claude" /></div>
+                </details>
+              </>
+            )}
           </div>
         </>
       )}
@@ -292,18 +371,33 @@ export default function WorkshopDesigner() {
               <input
                 value={followUp}
                 onChange={e => setFollowUp(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') ask(followUp, false); }}
+                onKeyDown={e => { if (e.key === 'Enter' && aiOn !== false) ask(followUp, false); }}
                 className="flex-1 rounded-xl border border-ink2/30 px-3 py-2 bg-white"
                 placeholder="Tell Claude what to change…"
               />
-              <button
-                onClick={() => ask(followUp, false)}
-                disabled={busy}
-                className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark disabled:opacity-60 text-white font-semibold px-4 rounded-xl"
-              >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Ask
-              </button>
+              {aiOn === false ? (
+                <button
+                  onClick={() => followUp.trim() && copyText(changeRequest(followUp), 'change')}
+                  className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark text-white font-semibold px-4 rounded-xl"
+                >
+                  <Copy className="w-4 h-4" /> {copied === 'change' ? 'Copied!' : 'Copy request'}
+                </button>
+              ) : (
+                <button
+                  onClick={() => ask(followUp, false)}
+                  disabled={busy}
+                  className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark disabled:opacity-60 text-white font-semibold px-4 rounded-xl"
+                >
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Ask
+                </button>
+              )}
             </div>
+            {aiOn === false && (
+              <div className="mt-3">
+                <p className="text-sm text-ink2 mb-2">The request includes your design, so Claude knows what to change. Your instructor pastes Claude&apos;s answer here:</p>
+                <PasteBox value={pasted} onChange={setPasted} onUse={applyPasted} label="Paste Claude's new code" />
+              </div>
+            )}
           </div>
 
           {/* The code itself */}

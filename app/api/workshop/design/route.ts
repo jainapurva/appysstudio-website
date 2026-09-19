@@ -11,6 +11,18 @@ export const dynamic = 'force-dynamic';
 const PER_KID = { limit: 20, windowMs: 10 * 60 * 1000 };   // 20 asks per 10 min per device
 const PER_DAY = { limit: 600, windowMs: 24 * 60 * 60 * 1000 };
 
+function aiEnabled(): boolean {
+  if (!process.env.ANTHROPIC_API_KEY) return false;
+  return process.env.NODE_ENV !== 'production' || Boolean(process.env.WORKSHOP_AI_CODE);
+}
+
+// GET /api/workshop/design → { aiEnabled }. When it's off, the page switches to
+// paste mode: the instructor runs the prompt in their own Claude on the big
+// screen and the code is pasted back in.
+export async function GET() {
+  return NextResponse.json({ aiEnabled: aiEnabled() });
+}
+
 // POST /api/workshop/design  { messages: ChatTurn[], accessCode?: string }
 // Streams Claude's reply back as plain text. The page pulls the OpenSCAD out
 // of the finished text.
