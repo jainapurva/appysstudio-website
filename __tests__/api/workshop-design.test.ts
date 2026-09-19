@@ -203,5 +203,15 @@ describe('playgroundUrl', () => {
     expect(state.params.sources[0].content).toBe(code);
     expect(state.params.activePath).toBe(state.params.sources[0].path);
     expect(state.view.layout.viewer).toBe(true);
+    // the viewer's Download button hands kids a 3MF the printer software opens
+    expect(state.params.exportFormat3D).toBe('3mf');
+    expect(state.view.color).toBe('#e8965a');
+  });
+
+  it('uses the kid\'s chosen colour and can still hand back STL', async () => {
+    const url = await playgroundUrl('cube(1);', { color: '#e8578f', format: 'stl' });
+    const state = JSON.parse(gunzipSync(Buffer.from(url.split('#')[1], 'base64')).toString());
+    expect(state.view.color).toBe('#e8578f');
+    expect(state.params.exportFormat3D).toBe('stl');
   });
 });

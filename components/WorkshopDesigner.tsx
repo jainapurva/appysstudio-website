@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Sparkles, Send, Box, Download, ExternalLink, RotateCcw, Loader2, CheckCircle2, Copy, ClipboardPaste } from 'lucide-react';
-import { DESIGN_TEMPLATES, FOLLOW_UPS, type DesignKind } from '@/lib/workshop-learn';
+import { DESIGN_TEMPLATES, FOLLOW_UPS, FILAMENT_COLORS, type DesignKind } from '@/lib/workshop-learn';
 import { extractCode, explanation, type ChatTurn } from '@/lib/workshop-ai';
 import { playgroundUrl, findNumbers, setNumber } from '@/lib/playground';
 
@@ -60,6 +60,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   // One Claude session per design on the agent's server, like a WhatsApp chat
   // in Swayat: the first ask starts it, follow-ups resume it.
   const [sessionId, setSessionId] = useState('');
+  const [color, setColor] = useState(FILAMENT_COLORS[0]);
 
   useEffect(() => {
     fetch('/api/workshop/design')
@@ -76,15 +77,19 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
     const saved = storageGet(DESIGN_KEY);
     if (saved) {
       try {
-        const d = JSON.parse(saved) as { code: string; kind: DesignKind; sessionId?: string };
-        if (d.code) { setCode(d.code); setAiCode(d.code); setKind(d.kind); setSessionId(d.sessionId ?? ''); }
+        const d = JSON.parse(saved) as { code: string; kind: DesignKind; sessionId?: string; color?: string };
+        if (d.code) {
+          setCode(d.code); setAiCode(d.code); setKind(d.kind); setSessionId(d.sessionId ?? '');
+          const saved = FILAMENT_COLORS.find(c => c.name === d.color);
+          if (saved) setColor(saved);
+        }
       } catch { /* ignore a bad save */ }
     }
   }, []);
 
   useEffect(() => {
-    if (code) storageSet(DESIGN_KEY, JSON.stringify({ code, kind, sessionId }));
-  }, [code, kind, sessionId]);
+    if (code) storageSet(DESIGN_KEY, JSON.stringify({ code, kind, sessionId, color: color.name }));
+  }, [code, kind, sessionId, color]);
 
   const numbers = useMemo(() => findNumbers(code), [code]);
 
@@ -95,7 +100,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
 
   async function show(c: string) {
     onDesigned?.();
-    setViewerUrl(await playgroundUrl(c));
+    setViewerUrl(await playgroundUrl(c, { color: color.hex }));
     setViewerKey(k => k + 1);   // a fresh iframe: the Playground ignores a new link in an open page
   }
 
@@ -208,7 +213,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
   }
 
   async function openFull() {
-    window.open(await playgroundUrl(code, { editor: true, customizer: true }), '_blank', 'noopener');
+    window.open(await playgroundUrl(code, { editor: true, customizer: true, color: color.hex }), '_blank', 'noopener');
   }
 
   async function send() {
@@ -217,7 +222,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
     const res = await fetch('/api/workshop/designs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, kind, code }),
+      body: JSON.stringify({ name, kind, code, color: color.name }),
     });
     const j = await res.json().catch(() => ({} as { error?: string }));
     if (!res.ok) { setError(j.error || 'Could not send it. Try again.'); return; }
@@ -319,6 +324,25 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
             </div>
           )}
 
+          {/* Filament colour */}
+          <div>
+            <h3 className="font-display text-xl text-ink mb-1">Pick your colour</h3>
+            <p className="text-sm text-ink2 mb-2">This is the filament we load for your print.</p>
+            <div className="flex flex-wrap gap-2">
+              {FILAMENT_COLORS.map(c => (
+                <button
+                  key={c.name}
+                  onClick={() => { setColor(c); show(code); }}
+                  title={c.name}
+                  aria-label={c.name}
+                  className={`w-10 h-10 rounded-full border-4 ${color.name === c.name ? 'border-ink scale-110' : 'border-white'} shadow-[0_1px_0_rgba(61,47,36,.2)] transition-transform`}
+                  style={{ backgroundColor: c.hex }}
+                />
+              ))}
+              <span className="self-center text-sm text-ink2 ml-1">{color.name}</span>
+            </div>
+          </div>
+
           {/* The 3D view */}
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -344,6 +368,8 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
             )}
             <p className="text-xs text-ink2 mt-1">
               If the view stays empty, press the <b>Render</b> button at the bottom of the 3D view. Drag to spin it.
+              After rendering, <b>Download 3MF</b> in the 3D view saves a file the printer software opens directly
+              (the little arrow next to it switches to STL).
             </p>
           </div>
 
@@ -438,7 +464,7 @@ export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: 
                 <Send className="w-4 h-4" /> Send to the print station
               </button>
               <button onClick={download} className="inline-flex items-center gap-2 bg-white border border-ink2/20 font-semibold px-4 py-2 rounded-xl">
-                <Download className="w-4 h-4" /> Download
+                <Download className="w-4 h-4" /> Download .scad
               </button>
               <button onClick={startOver} className="inline-flex items-center gap-2 text-ink2 font-semibold px-3 py-2">
                 <RotateCcw className="w-4 h-4" /> Start a new design

@@ -158,6 +158,7 @@ export const FOLLOW_UPS = [
   'The letters look thin. Make them bolder.',
   'Make the corners rounder.',
   'Explain what each number at the top does, like I\'m 10.',
+  'Make the top face slightly curved so it feels nicer.',
   'Something is floating in the air. Make sure every part sits on z = 0.',
   'Add one more keycap at the end with a star instead of a letter.',
 ];
@@ -230,3 +231,16 @@ export const CAD_PUZZLE = {
   answer: 1,
   why: 'The smaller box makes it hollow so it fits over the switch, and the plus-shaped hole grips the switch\'s stem.',
 };
+
+// Filament colours kids can pick for their clicker. The 3D view uses the hex;
+// the print station sees the name so it knows which spool to load.
+export const FILAMENT_COLORS = [
+  { name: 'Sunset Orange', hex: '#e8965a' },
+  { name: 'Hot Pink',      hex: '#e8578f' },
+  { name: 'Lime Green',    hex: '#7bc043' },
+  { name: 'Ocean Blue',    hex: '#3b6fb6' },
+  { name: 'Purple',        hex: '#7d5ba6' },
+  { name: 'Sunshine',      hex: '#f2c53d' },
+  { name: 'Black',         hex: '#2f2a26' },
+  { name: 'White',         hex: '#f4f1ea' },
+];

@@ -10,6 +10,10 @@ const PLAYGROUND = 'https://ochafik.com/openscad2/';
 export interface PlaygroundView {
   editor?: boolean;
   customizer?: boolean;
+  /** Colour of the model in the 3D view (the kid's filament choice). */
+  color?: string;
+  /** What the viewer's Download button hands back. */
+  format?: '3mf' | 'stl';
 }
 
 export async function playgroundUrl(code: string, view: PlaygroundView = {}): Promise<string> {
@@ -19,11 +23,11 @@ export async function playgroundUrl(code: string, view: PlaygroundView = {}): Pr
       sources: [{ path: '/design.scad', content: code }],
       features: ['lazy-union'],
       exportFormat2D: 'svg',
-      exportFormat3D: 'stl',
+      exportFormat3D: view.format ?? '3mf',
     },
     view: {
       layout: { mode: 'multi', editor: view.editor ?? false, viewer: true, customizer: view.customizer ?? false },
-      color: '#e8965a',
+      color: view.color ?? '#e8965a',
       showAxes: true,
     },
   };

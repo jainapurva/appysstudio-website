@@ -9,6 +9,7 @@ interface Design {
   name: string;
   kind: string;
   code: string;
+  color?: string;
   createdAt: string;
 }
 
@@ -60,7 +61,7 @@ export default function StationPage() {
           <div key={d.id} className="bg-white rounded-xl p-4 shadow-[0_2px_0_rgba(61,47,36,.1)] flex flex-wrap items-center gap-3">
             <div className="mr-auto">
               <p className="font-display text-xl text-ink">{d.name}</p>
-              <p className="text-sm text-ink2">{d.kind} · {new Date(d.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+              <p className="text-sm text-ink2">{d.kind}{d.color ? ` · ${d.color}` : ''} · {new Date(d.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
             </div>
             <button onClick={() => open(d)} className="inline-flex items-center gap-1 bg-sage text-white font-semibold px-3 py-2 rounded-lg">
               <ExternalLink className="w-4 h-4" /> Open in 3D (then Download STL)
