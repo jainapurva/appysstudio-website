@@ -34,7 +34,7 @@ function PasteBox({ value, onChange, onUse, label }: { value: string; onChange: 
   );
 }
 
-export default function WorkshopDesigner() {
+export default function WorkshopDesigner({ onDesigned, onSent }: { onDesigned?: () => void; onSent?: () => void } = {}) {
   const [kind, setKind] = useState<DesignKind>('keycap');
   const [prompt, setPrompt] = useState(DESIGN_TEMPLATES.keycap.prompt);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
@@ -90,6 +90,7 @@ export default function WorkshopDesigner() {
   }
 
   async function show(c: string) {
+    onDesigned?.();
     setViewerUrl(await playgroundUrl(c));
     setViewerKey(k => k + 1);   // a fresh iframe: the Playground ignores a new link in an open page
   }
@@ -216,6 +217,7 @@ export default function WorkshopDesigner() {
     });
     const j = await res.json().catch(() => ({} as { error?: string }));
     if (!res.ok) { setError(j.error || 'Could not send it. Try again.'); return; }
+    onSent?.();
     setSent(`Sent! Your ${DESIGN_TEMPLATES[kind].label.toLowerCase()} is at the print station, ${name.trim()}.`);
   }
 

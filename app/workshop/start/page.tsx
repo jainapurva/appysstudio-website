@@ -1,7 +1,7 @@
 import WorkshopLearn from '@/components/WorkshopLearn';
 
 export const metadata = {
-  title: "Workshop: Learn Step by Step | Appy's Studio",
+  title: '3D Printing Workshop: Start Here',
   description: 'Learn how 3D printing works, then design your own clicker keychain with AI, step by step.',
   alternates: { canonical: 'https://appysstudio.com/workshop/start' },
   // A tool for the room, not a landing page.

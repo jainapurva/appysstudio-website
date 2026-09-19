@@ -8,15 +8,35 @@ export interface LearnStep {
 }
 
 export const LEARN_STEPS: LearnStep[] = [
-  { id: 'welcome',   short: 'Welcome',          title: 'Welcome, maker!' },
   { id: 'what',      short: 'What is 3D printing?', title: 'What is 3D printing?' },
   { id: 'printers',  short: 'Types of printers', title: 'Types of 3D printers' },
   { id: 'filaments', short: 'Filaments',        title: 'What do printers print with?' },
+  { id: 'slicer',    short: 'Get Bambu Studio', title: 'Get the slicer: Bambu Studio' },
   { id: 'cad',       short: 'What is CAD?',     title: 'CAD: designing with shapes and numbers' },
   { id: 'snap',      short: 'Talking to AI',    title: 'How to talk to an AI designer' },
   { id: 'design',    short: 'Design with AI',   title: 'Design your clicker with AI' },
   { id: 'check',     short: 'Check the AI',     title: "Check the AI's work" },
   { id: 'print',     short: 'Send to print',    title: 'Send it to the printer' },
+];
+
+// Bambu Lab's official download page (Windows 10 64-bit+, macOS 10.15+); the
+// GitHub releases page is the backup and has the Linux build.
+export const BAMBU_STUDIO_URL = 'https://bambulab.com/en/download/studio';
+export const BAMBU_STUDIO_RELEASES_URL = 'https://github.com/bambulab/BambuStudio/releases/latest';
+
+export const SLICER_JOBS = [
+  'Cuts your 3D model into hundreds of thin layers',
+  'Plans the path the nozzle takes on every layer',
+  'Adds supports under parts that would print in mid-air',
+  'Tells you how long the print takes and how much plastic it uses',
+  'Writes the instructions (G-code) the printer follows',
+];
+
+export const SLICER_INSTALL = [
+  { name: 'Download', what: 'Pick Windows or Mac on the download page. Ask a grown-up before installing anything.' },
+  { name: 'Install', what: 'Windows: run the installer. Mac: open the file and drag Bambu Studio into Applications.' },
+  { name: 'Set up', what: 'When it asks, choose your region and our printers: Bambu Lab A1 and P1S. You can slice without signing in.' },
+  { name: 'Try it', what: 'Later, in Send to print, you will open your own design in it and see its layers.' },
 ];
 
 export const SAFETY_RULES = [
@@ -157,3 +177,56 @@ export const AFTER_PRINT = [
   { name: 'Build', what: 'Press the switches into the base, press your keycaps on, add the keyring.' },
   { name: 'Click!', what: 'Take it home. You designed it, you checked it, you built it.' },
 ];
+
+// ---------------------------------------------------------------- the fun layer
+// One badge per step, earned by finishing that step's mini-challenge.
+export const BADGES: Record<string, { emoji: string; name: string; how: string }> = {
+  what:      { emoji: '🧱', name: 'Layer Legend',       how: 'Sort all six things into the right way of making' },
+  printers:  { emoji: '🖨️', name: 'Printer Pro',        how: 'Reveal every mystery printer' },
+  filaments: { emoji: '🕵️', name: 'Filament Detective', how: 'Finish the filament quiz' },
+  slicer:    { emoji: '🔪', name: 'Slicer Ready',       how: 'Get Bambu Studio open' },
+  cad:       { emoji: '🧩', name: 'Shape Shifter',      how: 'Answer the keycap puzzle' },
+  snap:      { emoji: '🗣️', name: 'Prompt Whisperer',   how: 'Find every missing SNAP letter' },
+  design:    { emoji: '🤖', name: 'AI Designer',        how: 'Get your first design in 3D' },
+  check:     { emoji: '🔍', name: 'Quality Inspector',  how: 'Tick every check' },
+  print:     { emoji: '🚀', name: 'Print Launcher',     how: 'Send a design to the print station' },
+};
+
+export const FUN_FACTS: Record<string, string> = {
+  what:      'In 2014, astronauts on the International Space Station 3D printed a wrench. Its design was emailed up from Earth!',
+  printers:  'Some companies print whole houses out of concrete, one giant layer at a time.',
+  filaments: 'PLA is made from plants like corn and sugarcane. Your clicker is basically fancy corn!',
+  slicer:    'A slicer cuts your keycap into about 40 layers faster than you can blink.',
+  cad:       'Every part of the mobility chair you\'ll build later was designed in CAD first.',
+  snap:      'Engineers have a name for a clear description like this: a "spec", short for specification.',
+  design:    'In code CAD, changing one number can rebuild the whole design in a second.',
+  check:     'Real engineers check each other\'s designs too. It\'s called a design review.',
+  print:     'Each layer of your keycap takes only a few seconds. The whole key is about 40 layers.',
+};
+
+export const SORT_GAME = [
+  { thing: 'Carving a pumpkin 🎃',              answer: 'Subtractive' },
+  { thing: 'Making ice cubes in a tray 🧊',     answer: 'Formative' },
+  { thing: 'Stacking a LEGO tower 🧱',          answer: 'Additive' },
+  { thing: 'Sanding a block of wood 🪵',        answer: 'Subtractive' },
+  { thing: 'A chocolate bunny mold 🐰',         answer: 'Formative' },
+  { thing: 'A 3D printer making a keychain 🔑', answer: 'Additive' },
+] as const;
+
+export const SNAP_GAME = [
+  { prompt: 'Make a keycap 17 mm wide with the letter M on top. Print it upside down.', missing: 'A', why: 'It never says it has to fit a keyboard switch, so the AI won\'t add the hole.' },
+  { prompt: 'Make a keycap that fits a keyboard switch, with a star on top. Print it upside down.', missing: 'N', why: 'No sizes! The AI will guess how big it is.' },
+  { prompt: '17 mm wide, 8 mm tall, fits a keyboard switch, print it upside down.', missing: 'S', why: 'It never says what it is or what goes on top.' },
+  { prompt: 'A keycap with a heart on top, 17 mm wide and 8 mm tall, that fits a keyboard switch.', missing: 'P', why: 'Nothing about printing, so it might need supports.' },
+] as const;
+
+export const CAD_PUZZLE = {
+  q: 'Which recipe makes a keycap that fits on a switch?',
+  options: [
+    'A box stacked on another box',
+    'A box, minus a smaller box inside, minus a plus-shaped hole',
+    'One big sphere',
+  ],
+  answer: 1,
+  why: 'The smaller box makes it hollow so it fits over the switch, and the plus-shaped hole grips the switch\'s stem.',
+};

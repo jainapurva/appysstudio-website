@@ -1,15 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, CheckCircle2, Circle, ShieldAlert, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Download, ExternalLink, ShieldAlert, XCircle } from 'lucide-react';
 import {
-  LEARN_STEPS, SAFETY_RULES, MAKE_THREE_WAYS, PRINT_JOURNEY, PRINTER_TYPES, FILAMENTS,
+  LEARN_STEPS, SAFETY_RULES, MAKE_THREE_WAYS, PRINT_JOURNEY, FILAMENTS,
   FILAMENT_QUIZ, SNAP, PROMPT_LEVELS, AI_CHECKLIST, AFTER_PRINT,
+  BAMBU_STUDIO_URL, BAMBU_STUDIO_RELEASES_URL, SLICER_JOBS, SLICER_INSTALL, FUN_FACTS, BADGES,
 } from '@/lib/workshop-learn';
 import WorkshopDesigner from '@/components/WorkshopDesigner';
+import {
+  Confetti, BadgeToast, BadgeShelf, FunFact, ChallengeHeader, LayerDemo, SortGame,
+  MysteryPrinters, OneQuestion, SnapGame, Certificate,
+} from '@/components/WorkshopFun';
 
 const STEP_KEY = 'workshop-learn-step';
+const BADGE_KEY = 'workshop-badges';
 
 const card = 'bg-white rounded-xl p-4 shadow-[0_2px_0_rgba(61,47,36,.1)]';
 
@@ -26,9 +32,11 @@ function Cards({ items }: { items: { title: string; lines: string[] }[] }) {
   );
 }
 
-function Quiz() {
+function Quiz({ onDone }: { onDone: () => void }) {
   const [picked, setPicked] = useState<Record<number, number>>({});
   const score = FILAMENT_QUIZ.filter((q, i) => picked[i] === q.answer).length;
+  const finished = Object.keys(picked).length === FILAMENT_QUIZ.length;
+  useEffect(() => { if (finished) onDone(); }, [finished, onDone]);
   return (
     <div className="space-y-4">
       {FILAMENT_QUIZ.map((q, i) => (
@@ -60,14 +68,16 @@ function Quiz() {
         </div>
       ))}
       {Object.keys(picked).length === FILAMENT_QUIZ.length && (
-        <p className="font-display text-xl text-clay">You got {score} out of {FILAMENT_QUIZ.length}!</p>
+        <p className="font-display text-xl text-clay">You got {score} out of {FILAMENT_QUIZ.length}!{score === FILAMENT_QUIZ.length ? ' Perfect score! 🏆' : ' Try the ones you missed again!'}</p>
       )}
     </div>
   );
 }
 
-function Checklist() {
+function Checklist({ onDone }: { onDone: () => void }) {
   const [done, setDone] = useState<boolean[]>(AI_CHECKLIST.map(() => false));
+  const all = done.every(Boolean);
+  useEffect(() => { if (all) onDone(); }, [all, onDone]);
   return (
     <div className="space-y-2">
       {AI_CHECKLIST.map((c, i) => (
@@ -87,14 +97,22 @@ function Checklist() {
   );
 }
 
-function StepBody({ id }: { id: string }) {
+interface StepProps {
+  id: string;
+  earned: string[];
+  earn: (id: string) => void;
+}
+
+function StepBody({ id, earned, earn }: StepProps) {
+  const done = useCallback(() => earn(id), [earn, id]);
+  const got = earned.includes(id);
   switch (id) {
-    case 'welcome':
+    case 'what':
       return (
         <div className="space-y-5">
           <p className="text-lg text-ink">
-            Today you&apos;ll design your own <b>clicker keychain</b> with an AI, check its work like an engineer,
-            print it, and build it with real keyboard switches. It&apos;s yours to take home.
+            Welcome, maker! Today you&apos;ll learn how 3D printing works, then design your own <b>clicker keychain</b> with
+            an AI, check its work like an engineer, print it, and build it. It&apos;s yours to take home.
           </p>
           <div className={`${card} border-l-4 border-clay`}>
             <p className="font-semibold text-ink flex items-center gap-2 mb-2"><ShieldAlert className="w-5 h-5 text-clay" /> Safety first</p>
@@ -102,13 +120,7 @@ function StepBody({ id }: { id: string }) {
               {SAFETY_RULES.map(r => <li key={r} className="text-ink2">• {r}</li>)}
             </ul>
           </div>
-          <p className="text-ink2">Press <b>Next</b> to start. You can go back to any step at any time.</p>
-        </div>
-      );
-    case 'what':
-      return (
-        <div className="space-y-5">
-          <p className="text-lg text-ink">A 3D printer builds a real object from a computer file, <b>one thin layer at a time</b>, from the bottom up.</p>
+          <p className="text-lg text-ink">So what is it? A 3D printer builds a real object from a computer file, <b>one thin layer at a time</b>, from the bottom up.</p>
           <h3 className="font-display text-xl text-ink">Three ways to make things</h3>
           <Cards items={MAKE_THREE_WAYS.map(w => ({ title: w.name, lines: [w.how, w.example] }))} />
           <h3 className="font-display text-xl text-ink">From idea to object in 4 steps</h3>
@@ -121,20 +133,24 @@ function StepBody({ id }: { id: string }) {
               </li>
             ))}
           </ol>
-          <p className="bg-butter/60 rounded-xl p-4 text-ink">
-            <b>Fun fact:</b> one layer is about 0.2 mm, the thickness of two sheets of paper.
-            A keycap is about 40 layers tall.
-          </p>
+          <LayerDemo />
+          <ChallengeHeader stepId={id} earned={got} />
+          <p className="text-ink2 -mt-3">Is each one additive, subtractive or formative?</p>
+          <SortGame onDone={done} />
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'printers':
       return (
         <div className="space-y-5">
-          <Cards items={PRINTER_TYPES.map(p => ({ title: p.name, lines: [p.how, `It's like: ${p.like}.`, `Good for: ${p.good}.`, `But: ${p.bad}.`] }))} />
+          <p className="text-lg text-ink">There&apos;s more than one way to 3D print. Can you guess each printer from its clue?</p>
+          <ChallengeHeader stepId={id} earned={got} />
+          <MysteryPrinters onDone={done} />
           <p className="bg-butter/60 rounded-xl p-4 text-ink">
             <b>Look at our printers:</b> on the A1 the <b>bed slides</b> back and forth. On the P1S the
             <b> head zips around</b> and the bed moves down. Which part moves on each one?
           </p>
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'filaments':
@@ -142,8 +158,49 @@ function StepBody({ id }: { id: string }) {
         <div className="space-y-5">
           <p className="text-lg text-ink">FDM printers use <b>filament</b>: plastic string on a spool, 1.75 mm thick.</p>
           <Cards items={FILAMENTS.map(f => ({ title: f.name, lines: [f.feel, `Used for: ${f.where}.`, f.note + '.'] }))} />
-          <h3 className="font-display text-xl text-ink">Quick quiz</h3>
-          <Quiz />
+          <ChallengeHeader stepId={id} earned={got} />
+          <Quiz onDone={done} />
+          <FunFact text={FUN_FACTS[id]} />
+        </div>
+      );
+    case 'slicer':
+      return (
+        <div className="space-y-5">
+          <p className="text-lg text-ink">
+            A printer can&apos;t read a 3D model directly. First a <b>slicer</b> turns it into instructions. Ours is
+            <b> Bambu Studio</b>: it&apos;s free, and it&apos;s what we use at the print station.
+          </p>
+          <div className={card}>
+            <p className="font-semibold text-ink mb-2">What a slicer does</p>
+            <ul className="space-y-1">
+              {SLICER_JOBS.map(j => <li key={j} className="text-ink2">• {j}</li>)}
+            </ul>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a href={BAMBU_STUDIO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-clay hover:bg-clay-dark text-white font-semibold px-5 py-3 rounded-xl">
+              <Download className="w-5 h-5" /> Download Bambu Studio
+            </a>
+            <a href={BAMBU_STUDIO_RELEASES_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-ink2 underline">
+              Page won&apos;t load? Get it from GitHub <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+          <p className="text-sm text-ink2">Works on Windows 10 (64-bit) or newer and macOS 10.15 or newer. Not on Chromebooks or iPads: if that&apos;s your device, share with a buddy or use the print station.</p>
+          <ol className="grid sm:grid-cols-4 gap-3">
+            {SLICER_INSTALL.map((s, i) => (
+              <li key={s.name} className={card}>
+                <p className="text-clay font-display text-2xl">{i + 1}</p>
+                <p className="font-semibold text-ink">{s.name}</p>
+                <p className="text-sm text-ink2">{s.what}</p>
+              </li>
+            ))}
+          </ol>
+          <ChallengeHeader stepId={id} earned={got} />
+          {!got && (
+            <button onClick={done} className="inline-flex items-center gap-2 bg-sage hover:bg-sage-dark text-white font-semibold px-5 py-3 rounded-xl">
+              ✅ I have Bambu Studio open!
+            </button>
+          )}
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'cad':
@@ -159,6 +216,9 @@ function StepBody({ id }: { id: string }) {
           <Link href="/3d-generator/parametric/keycaps" target="_blank" className="inline-flex items-center gap-2 bg-sage hover:bg-sage-dark text-white font-semibold px-4 py-2 rounded-xl">
             Try it: type your name into the clicker generator <ArrowRight className="w-4 h-4" />
           </Link>
+          <ChallengeHeader stepId={id} earned={got} />
+          <OneQuestion onDone={done} />
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'snap':
@@ -186,16 +246,28 @@ function StepBody({ id }: { id: string }) {
               </div>
             ))}
           </div>
+          <ChallengeHeader stepId={id} earned={got} />
+          <p className="text-ink2 -mt-3">Be a prompt detective: which SNAP letter is each prompt missing?</p>
+          <SnapGame onDone={done} />
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'design':
-      return <WorkshopDesigner />;
+      return (
+        <div className="space-y-6">
+          <ChallengeHeader stepId={id} earned={got} />
+          <WorkshopDesigner onDesigned={done} onSent={() => earn('print')} />
+          <FunFact text={FUN_FACTS[id]} />
+        </div>
+      );
     case 'check':
       return (
         <div className="space-y-4">
           <p className="text-lg text-ink">AI is fast, but it isn&apos;t always right. Engineers check every design before it prints. Tick each one off:</p>
-          <Checklist />
+          <ChallengeHeader stepId={id} earned={got} />
+          <Checklist onDone={done} />
           <p className="text-ink2">Found a problem? Go back to <b>Design with AI</b> and ask Claude to fix it, or change the number yourself.</p>
+          <FunFact text={FUN_FACTS[id]} />
         </div>
       );
     case 'print':
@@ -211,10 +283,20 @@ function StepBody({ id }: { id: string }) {
               </li>
             ))}
           </ol>
+          <div className={card}>
+            <p className="font-semibold text-ink mb-1">Slice it yourself in Bambu Studio</p>
+            <p className="text-sm text-ink2">
+              On the Design step press <b>Open big</b>, then <b>Render</b>, then <b>Download STL</b>. Drag the file into
+              Bambu Studio and press <b>Slice plate</b>. Slide through the layers and read how long it would take to print.
+            </p>
+          </div>
           <p className="bg-butter/60 rounded-xl p-4 text-ink">
             <b>Keep making at home:</b> this page stays open for you at appysstudio.com/workshop/start, and our
             free generators are at <Link href="/3d-generator" className="underline">appysstudio.com/3d-generator</Link>.
           </p>
+          <FunFact text={FUN_FACTS[id]} />
+          <h3 className="font-display text-2xl text-ink">🎓 Your Maker certificate</h3>
+          <Certificate earned={earned} />
         </div>
       );
     default:
@@ -224,6 +306,30 @@ function StepBody({ id }: { id: string }) {
 
 export default function WorkshopLearn() {
   const [index, setIndex] = useState(0);
+  const [earned, setEarned] = useState<string[]>([]);
+  const earnedRef = useRef<string[]>([]);
+  const [burst, setBurst] = useState({ id: '', n: 0 });
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(BADGE_KEY) ?? '[]');
+      if (Array.isArray(saved)) {
+        const valid = saved.filter((b): b is string => typeof b === 'string' && b in BADGES);
+        earnedRef.current = valid;
+        setEarned(valid);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // Earning is idempotent: challenges may call this on every render once done.
+  const earn = useCallback((id: string) => {
+    if (earnedRef.current.includes(id)) return;
+    const next = [...earnedRef.current, id];
+    earnedRef.current = next;
+    setEarned(next);
+    setBurst(b => ({ id, n: b.n + 1 }));
+    try { localStorage.setItem(BADGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     // ?step=design lets the instructor send everyone to one step.
@@ -261,16 +367,19 @@ export default function WorkshopLearn() {
                   i === index ? 'bg-clay text-white' : i < index ? 'text-sage-dark hover:bg-paper2' : 'text-ink2 hover:bg-paper2'
                 }`}
               >
-                {i + 1}. {s.short}
+                {i + 1}. {s.short}{earned.includes(s.id) ? ` ${BADGES[s.id].emoji}` : ''}
               </button>
             </li>
           ))}
         </ol>
+        <BadgeShelf earned={earned} />
       </nav>
+      <Confetti key={`c${burst.n}`} burst={burst.n} />
+      <BadgeToast key={`t${burst.n}`} stepId={burst.id} burst={burst.n} />
 
       <section>
         <h1 className="font-display text-[clamp(30px,4vw,44px)] text-ink mb-6">{step.title}</h1>
-        <StepBody id={step.id} />
+        <StepBody id={step.id} earned={earned} earn={earn} />
         <div className="flex justify-between mt-10 pt-6 border-t border-ink2/15">
           <button
             onClick={() => go(index - 1)}
