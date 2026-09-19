@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { gunzipSync } from 'zlib';
 import { resetRateLimits } from '@/lib/keycaps/ratelimit';
+import { resetAgentHealth } from '@/lib/workshop-agent';
 import { playgroundUrl } from '@/lib/playground';
 
 const streamMock = vi.fn();
@@ -111,10 +112,18 @@ describe('POST /api/workshop/design via the claude -p agent', () => {
     vi.stubEnv('WORKSHOP_AGENT_URL', 'http://agent.test:8787/');
     vi.stubEnv('WORKSHOP_AGENT_TOKEN', 'secret');
   });
-  afterEach(() => { vi.unstubAllEnvs(); globalThis.fetch = realFetch; });
+  afterEach(() => { vi.unstubAllEnvs(); globalThis.fetch = realFetch; resetAgentHealth(); });
 
-  it('turns the AI on with only the agent configured', async () => {
+  it('turns the AI on when the agent answers its health check', async () => {
+    const fetchMock = vi.fn(async () => new Response('{"ok":true}'));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
     expect(await (await GET()).json()).toEqual({ aiEnabled: true });
+    expect((fetchMock.mock.calls[0] as unknown as [string])[0]).toBe('http://agent.test:8787/health');
+  });
+
+  it('falls back to paste mode when the agent or its tunnel is down', async () => {
+    globalThis.fetch = vi.fn(async () => { throw new Error('ECONNREFUSED'); }) as unknown as typeof fetch;
+    expect(await (await GET()).json()).toEqual({ aiEnabled: false });
   });
 
   it('forwards the system prompt and flattened chat, and streams the agent reply through', async () => {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { rateLimit, clientIp } from '@/lib/keycaps/ratelimit';
+import { agentBase, agentUp } from '@/lib/workshop-agent';
 import {
   WORKSHOP_AI_MODEL, WORKSHOP_SYSTEM_PROMPT, validateConversation, flattenConversation, type ChatTurn,
 } from '@/lib/workshop-ai';
@@ -20,9 +21,13 @@ function backend(): 'agent' | 'api' | null {
   return null;
 }
 
-function aiEnabled(): boolean {
-  if (!backend()) return false;
-  return process.env.NODE_ENV !== 'production' || Boolean(process.env.WORKSHOP_AI_CODE);
+async function aiEnabled(): Promise<boolean> {
+  const b = backend();
+  if (!b) return false;
+  if (process.env.NODE_ENV === 'production' && !process.env.WORKSHOP_AI_CODE) return false;
+  // If the agent's server or tunnel is down, offer paste mode instead of an
+  // "Ask Claude" button that can only fail.
+  return b === 'agent' ? agentUp() : true;
 }
 
 const STREAM_HEADERS = {
@@ -35,7 +40,7 @@ const STREAM_HEADERS = {
 
 // Forward to the agent and pass its text stream straight through.
 async function viaAgent(messages: ChatTurn[]): Promise<Response> {
-  const base = process.env.WORKSHOP_AGENT_URL!.replace(/\/+$/, '');
+  const base = agentBase();
   let res: Response;
   try {
     res = await fetch(`${base}/run`, {
@@ -65,7 +70,7 @@ async function viaAgent(messages: ChatTurn[]): Promise<Response> {
 // paste mode: the instructor runs the prompt in their own Claude on the big
 // screen and the code is pasted back in.
 export async function GET() {
-  return NextResponse.json({ aiEnabled: aiEnabled() });
+  return NextResponse.json({ aiEnabled: await aiEnabled() });
 }
 
 // POST /api/workshop/design  { messages: ChatTurn[], accessCode?: string }
