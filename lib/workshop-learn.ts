@@ -96,7 +96,7 @@ export const SNAP = [
   { letter: 'S', word: 'Shape',       say: 'What is it, and what is on it?', example: '"a keycap with the letter M on top"' },
   { letter: 'N', word: 'Numbers',     say: 'Every size, in millimeters.', example: '"17 mm wide, 8 mm tall"' },
   { letter: 'A', word: 'Attaches to', say: 'What it has to fit onto.', example: '"it must fit on a keyboard switch"' },
-  { letter: 'P', word: 'Print',       say: 'How it sits on the printer, with no supports.', example: '"print it upside down, top on the bed"' },
+  { letter: 'P', word: 'Print',       say: 'Which way up it sits on the printer.', example: '"open side down on the bed, letter facing up"' },
 ];
 
 export const PROMPT_LEVELS = [
@@ -114,8 +114,8 @@ export const DESIGN_TEMPLATES: Record<DesignKind, { label: string; prompt: strin
 - Shape: 17 mm square at the bottom, 13 mm square at the top, 8 mm tall, rounded corners.
 - Hollow underneath with 1.5 mm walls, so it fits over a keyboard switch.
 - Inside, in the middle: a round post 5.6 mm wide and 3.8 mm long coming down from the roof, with a plus-shaped hole in it. Each arm of the plus is 4.3 mm long and 1.3 mm wide, and the hole is 3.8 mm deep. This grips the switch.
-- On top: the letter "M", bold, 9 mm tall, sunk 0.6 mm into the top.
-- I will print it upside down (top on the bed), so nothing may need supports.
+- On top: the letter "M", bold, 9 mm tall, raised 1.2 mm above the top face.
+- It prints standing the right way up, with the open side down on the bed and the letter facing up. Supports inside the cap are fine.
 - Put every size in a variable at the top with a short comment.`,
   },
   base: {
@@ -139,8 +139,8 @@ The base:
 The keycaps (one for each letter of MAYA):
 - 17 mm square at the bottom, 13 mm at the top, 8 mm tall, hollow with 1.5 mm walls.
 - Inside: a 5.6 mm round post, 3.8 mm long, with a plus-shaped hole (arms 4.3 x 1.3 mm), 3.8 mm deep.
-- The letter on top, bold, 9 mm tall, sunk 0.6 mm into the top.
-Lay the base and all the keycaps next to each other, ready to print: base right way up, keycaps upside down, 5 mm apart.
+- The letter on top, bold, 9 mm tall, raised 1.2 mm above the top face.
+Lay the base and all the keycaps next to each other, ready to print, all standing the right way up (keycaps open side down, letters facing up), 5 mm apart.
 Put every size in a variable at the top with a short comment.`,
   },
   other: {
@@ -214,10 +214,10 @@ export const SORT_GAME = [
 ] as const;
 
 export const SNAP_GAME = [
-  { prompt: 'Make a keycap 17 mm wide with the letter M on top. Print it upside down.', missing: 'A', why: 'It never says it has to fit a keyboard switch, so the AI won\'t add the hole.' },
-  { prompt: 'Make a keycap that fits a keyboard switch, with a star on top. Print it upside down.', missing: 'N', why: 'No sizes! The AI will guess how big it is.' },
-  { prompt: '17 mm wide, 8 mm tall, fits a keyboard switch, print it upside down.', missing: 'S', why: 'It never says what it is or what goes on top.' },
-  { prompt: 'A keycap with a heart on top, 17 mm wide and 8 mm tall, that fits a keyboard switch.', missing: 'P', why: 'Nothing about printing, so it might need supports.' },
+  { prompt: 'Make a keycap 17 mm wide with the letter M on top. Print it open side down.', missing: 'A', why: 'It never says it has to fit a keyboard switch, so the AI won\'t add the hole.' },
+  { prompt: 'Make a keycap that fits a keyboard switch, with a star on top. Print it open side down.', missing: 'N', why: 'No sizes! The AI will guess how big it is.' },
+  { prompt: '17 mm wide, 8 mm tall, fits a keyboard switch, print it open side down.', missing: 'S', why: 'It never says what it is or what goes on top.' },
+  { prompt: 'A keycap with a heart on top, 17 mm wide and 8 mm tall, that fits a keyboard switch.', missing: 'P', why: 'Nothing about which way up it prints.' },
 ] as const;
 
 export const CAD_PUZZLE = {
