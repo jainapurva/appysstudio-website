@@ -151,6 +151,8 @@ All optional for local dev (features gracefully degrade):
 - `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET` - Apple OAuth
 - `ADMIN_PASSWORD` - Analytics page (defaults to `printcraft2025`)
 - `NEXTAUTH_SECRET` - JWT signing (auto-generated in dev)
+- `ANTHROPIC_API_KEY` - Claude API key for the `/workshop/learn` AI designer (off without it)
+- `WORKSHOP_AI_CODE` - the code kids type to use the AI designer; required in production (the route refuses without it)
 
 ## Site Structure & Navigation
 - **Homepage** (`/`) — Hero, Stats, Shop (3 products + Custom Swag card), How It Works, Custom Print Quote Form, FAQ, CTA
@@ -214,6 +216,20 @@ Landing + paid registration for the Aug 22, 2026 3D printing workshop.
 - Emails: `sendWorkshopConfirmationToCustomer`, `sendWorkshopRegistrationToOwner`,
   `sendWorkshopRegistrationPendingToOwner` (used when Square isn't configured —
   registration is saved and flagged for manual payment rather than failing).
+
+## Workshop Learn (`/workshop/learn`)
+Kid-paced, 9-step version of the workshop: what 3D printing is, printers, filaments (with a quiz),
+CAD, prompting with SNAP, **design with AI**, check the AI, send to print. Content lives in
+`lib/workshop-learn.ts`; `?step=<id>` jumps to a step (e.g. `?step=design`).
+- **AI designer** (`components/WorkshopDesigner.tsx`) calls `POST /api/workshop/design`, which streams
+  `claude-opus-5` output (system prompt + validation in `lib/workshop-ai.ts`; server-side
+  `fallbacks: "default"`). Gated by `WORKSHOP_AI_CODE`, rate-limited 20 asks/10 min per IP and 600/day.
+  Sends `X-Accel-Buffering: no` so nginx streams it.
+- **3D view** = the OpenSCAD Playground (ochafik.com/openscad2) in an iframe; the whole design travels
+  in the URL fragment (`lib/playground.ts`). A page that already has the Playground open ignores a new
+  fragment, so the iframe is remounted on every update.
+- **Print station** at `/workshop/learn/station` (ADMIN_PASSWORD) lists designs kids sent;
+  stored in `data/workshop-designs.json` via `/api/workshop/designs`.
 
 ## Recent Changes (newest first)
 - 2026-07-15: **Workshop page + paid registration** at `/workshop` (see above).
