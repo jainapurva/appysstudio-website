@@ -48,6 +48,17 @@ export function validateConversation(value: unknown): string | null {
   return null;
 }
 
+/**
+ * `claude -p` takes one prompt, not a message list, so a follow-up is sent as
+ * a transcript. (The page already puts the kid's current design into
+ * follow-ups, so the latest code is always in the last message.)
+ */
+export function flattenConversation(messages: ChatTurn[]): string {
+  if (messages.length === 1) return messages[0].content;
+  const lines = messages.map(m => `${m.role === 'user' ? 'KID' : 'YOU (your earlier reply)'}:\n${m.content}`);
+  return `${lines.join('\n\n---\n\n')}\n\n---\n\nReply to the kid's last message.`;
+}
+
 /** The first fenced code block (```openscad, ```scad or bare ```), or null. */
 export function extractCode(reply: string): string | null {
   const m = reply.match(/```(?:openscad|scad)?[^\n]*\n([\s\S]*?)```/i);

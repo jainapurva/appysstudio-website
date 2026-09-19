@@ -101,6 +101,54 @@ describe('POST /api/workshop/design', () => {
   });
 });
 
+describe('POST /api/workshop/design via the claude -p agent', () => {
+  const realFetch = globalThis.fetch;
+  beforeEach(() => {
+    resetRateLimits();
+    streamMock.mockReset();
+    vi.stubEnv('ANTHROPIC_API_KEY', '');
+    vi.stubEnv('WORKSHOP_AI_CODE', 'CLICK');
+    vi.stubEnv('WORKSHOP_AGENT_URL', 'http://agent.test:8787/');
+    vi.stubEnv('WORKSHOP_AGENT_TOKEN', 'secret');
+  });
+  afterEach(() => { vi.unstubAllEnvs(); globalThis.fetch = realFetch; });
+
+  it('turns the AI on with only the agent configured', async () => {
+    expect(await (await GET()).json()).toEqual({ aiEnabled: true });
+  });
+
+  it('forwards the system prompt and flattened chat, and streams the agent reply through', async () => {
+    const fetchMock = vi.fn(async () => new Response('```openscad\ncube(1);\n```'));
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+    const res = await POST(request({
+      messages: [
+        { role: 'user', content: 'Make a keycap' },
+        { role: 'assistant', content: '```openscad\ncube(17);\n```' },
+        { role: 'user', content: 'Make it rounder' },
+      ],
+      accessCode: 'click',
+    }));
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe('```openscad\ncube(1);\n```');
+    expect(streamMock).not.toHaveBeenCalled();
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('http://agent.test:8787/run');
+    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer secret');
+    const sent = JSON.parse(String(init.body));
+    expect(sent.system).toContain('kids aged about 10 to 14');
+    expect(sent.prompt).toContain('KID:\nMake a keycap');
+    expect(sent.prompt).toContain('YOU (your earlier reply):');
+    expect(sent.prompt.endsWith("Reply to the kid's last message.")).toBe(true);
+  });
+
+  it('maps a busy agent to 429 and an unreachable one to 502', async () => {
+    globalThis.fetch = vi.fn(async () => new Response('busy', { status: 503 })) as unknown as typeof fetch;
+    expect((await POST(request(kidAsk))).status).toBe(429);
+    globalThis.fetch = vi.fn(async () => { throw new Error('ECONNREFUSED'); }) as unknown as typeof fetch;
+    expect((await POST(request(kidAsk))).status).toBe(502);
+  });
+});
+
 describe('playgroundUrl', () => {
   it('round-trips the code through the URL fragment the Playground reads', async () => {
     const code = 'letter = "M"; // on top\ncube(17);\n';

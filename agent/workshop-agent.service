@@ -1,0 +1,18 @@
+# systemd unit for the workshop agent. Copy to /etc/systemd/system/, then:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now workshop-agent
+[Unit]
+Description=Appy's Studio workshop agent (claude -p on an API key)
+After=network-online.target
+
+[Service]
+Type=simple
+User=REPLACE_WITH_USER
+WorkingDirectory=/opt/workshop-agent
+ExecStart=/usr/bin/env node /opt/workshop-agent/workshop-agent.mjs
+# ANTHROPIC_API_KEY, AGENT_TOKEN, optional CLAUDE_MODEL / MAX_RUNNING / PORT
+EnvironmentFile=/opt/workshop-agent/.env
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

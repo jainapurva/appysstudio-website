@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { rateLimit, clientIp } from '@/lib/keycaps/ratelimit';
 import {
-  WORKSHOP_AI_MODEL, WORKSHOP_SYSTEM_PROMPT, validateConversation, type ChatTurn,
+  WORKSHOP_AI_MODEL, WORKSHOP_SYSTEM_PROMPT, validateConversation, flattenConversation, type ChatTurn,
 } from '@/lib/workshop-ai';
 
 export const runtime = 'nodejs';
@@ -11,9 +11,54 @@ export const dynamic = 'force-dynamic';
 const PER_KID = { limit: 20, windowMs: 10 * 60 * 1000 };   // 20 asks per 10 min per device
 const PER_DAY = { limit: 600, windowMs: 24 * 60 * 60 * 1000 };
 
+// Two ways to reach Claude: the workshop agent (agent/workshop-agent.mjs, which
+// runs `claude -p` on its own server) when WORKSHOP_AGENT_URL is set, otherwise
+// the API directly with ANTHROPIC_API_KEY.
+function backend(): 'agent' | 'api' | null {
+  if (process.env.WORKSHOP_AGENT_URL && process.env.WORKSHOP_AGENT_TOKEN) return 'agent';
+  if (process.env.ANTHROPIC_API_KEY) return 'api';
+  return null;
+}
+
 function aiEnabled(): boolean {
-  if (!process.env.ANTHROPIC_API_KEY) return false;
+  if (!backend()) return false;
   return process.env.NODE_ENV !== 'production' || Boolean(process.env.WORKSHOP_AI_CODE);
+}
+
+const STREAM_HEADERS = {
+  'Content-Type': 'text/plain; charset=utf-8',
+  'Cache-Control': 'no-store',
+  // nginx buffers proxied responses by default; this lets the text reach
+  // the kid as Claude writes it instead of all at once at the end.
+  'X-Accel-Buffering': 'no',
+};
+
+// Forward to the agent and pass its text stream straight through.
+async function viaAgent(messages: ChatTurn[]): Promise<Response> {
+  const base = process.env.WORKSHOP_AGENT_URL!.replace(/\/+$/, '');
+  let res: Response;
+  try {
+    res = await fetch(`${base}/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.WORKSHOP_AGENT_TOKEN}`,
+      },
+      body: JSON.stringify({ system: WORKSHOP_SYSTEM_PROMPT, prompt: flattenConversation(messages) }),
+      signal: AbortSignal.timeout(240_000),
+    });
+  } catch (err) {
+    console.error('workshop design: agent unreachable', err);
+    return NextResponse.json({ error: 'The AI helper is offline. Ask your instructor.' }, { status: 502 });
+  }
+  if (res.status === 503) {
+    return NextResponse.json({ error: 'Lots of designing going on! Wait a minute and try again.' }, { status: 429 });
+  }
+  if (!res.ok || !res.body) {
+    console.error('workshop design: agent error', res.status);
+    return NextResponse.json({ error: 'The AI had a problem. Try again.' }, { status: 502 });
+  }
+  return new Response(res.body, { headers: STREAM_HEADERS });
 }
 
 // GET /api/workshop/design → { aiEnabled }. When it's off, the page switches to
@@ -27,7 +72,7 @@ export async function GET() {
 // Streams Claude's reply back as plain text. The page pulls the OpenSCAD out
 // of the finished text.
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!backend()) {
     return NextResponse.json({ error: 'The AI designer is not switched on yet.' }, { status: 503 });
   }
 
@@ -61,6 +106,8 @@ export async function POST(req: NextRequest) {
       { status: 429, headers: { 'Retry-After': String(retryAfter) } },
     );
   }
+
+  if (backend() === 'agent') return viaAgent(messages);
 
   const client = new Anthropic();
   const encoder = new TextEncoder();
@@ -106,13 +153,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-store',
-      // nginx buffers proxied responses by default; this lets the text reach
-      // the kid as Claude writes it instead of all at once at the end.
-      'X-Accel-Buffering': 'no',
-    },
-  });
+  return new Response(stream, { headers: STREAM_HEADERS });
 }

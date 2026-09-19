@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateConversation, extractCode, explanation, LIMITS } from '@/lib/workshop-ai';
+import { validateConversation, extractCode, explanation, flattenConversation, LIMITS } from '@/lib/workshop-ai';
 import { findNumbers, setNumber } from '@/lib/playground';
 
 describe('validateConversation', () => {
@@ -77,5 +77,11 @@ describe('findNumbers / setNumber', () => {
     const twice = setNumber(once, letter, 'A"B');
     expect(twice.split('\n')[1]).toBe('letter = "AB"; // the letter on top');
     expect(twice.split('\n').slice(2)).toEqual(code.split('\n').slice(2));
+  });
+});
+
+describe('flattenConversation', () => {
+  it('sends a single message as-is', () => {
+    expect(flattenConversation([{ role: 'user', content: 'Make a keycap' }])).toBe('Make a keycap');
   });
 });
