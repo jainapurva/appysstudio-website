@@ -59,11 +59,8 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, id: design.id });
 }
 
-// GET: the print station lists what came in (same password as /admin).
-export async function GET(req: NextRequest) {
-  const pwd = req.nextUrl.searchParams.get('pwd');
-  if (pwd !== (process.env.ADMIN_PASSWORD || 'printcraft2025')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+// GET: the print station lists what came in. No password: the station is open
+// for the length of the workshop, and the page is marked noindex.
+export async function GET() {
   return NextResponse.json({ designs: readAll().reverse() });
 }

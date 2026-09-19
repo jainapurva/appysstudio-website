@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Download, ExternalLink, RefreshCw } from 'lucide-react';
 import { playgroundUrl } from '@/lib/playground';
 
@@ -15,16 +15,17 @@ interface Design {
 
 // The print station's inbox: every design kids sent from /workshop/start.
 export default function StationPage() {
-  const [pwd, setPwd] = useState('');
   const [designs, setDesigns] = useState<Design[] | null>(null);
   const [error, setError] = useState('');
 
-  async function load() {
+  const load = useCallback(async () => {
     setError('');
-    const res = await fetch(`/api/workshop/designs?pwd=${encodeURIComponent(pwd)}`);
-    if (!res.ok) { setError('Wrong password.'); return; }
+    const res = await fetch('/api/workshop/designs');
+    if (!res.ok) { setError('Could not load the designs. Try again.'); return; }
     setDesigns((await res.json()).designs);
-  }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   async function open(d: Design) {
     window.open(await playgroundUrl(d.code, { editor: true }), '_blank', 'noopener');
@@ -41,18 +42,11 @@ export default function StationPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <h1 className="font-display text-4xl text-ink mb-6">Print station</h1>
-      <div className="flex gap-2 mb-6">
-        <input
-          type="password"
-          value={pwd}
-          onChange={e => setPwd(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') load(); }}
-          className="rounded-xl border border-ink2/30 px-3 py-2 bg-white"
-          placeholder="Admin password"
-        />
+      <div className="flex items-center gap-3 mb-6">
         <button onClick={load} className="inline-flex items-center gap-2 bg-clay text-white font-semibold px-4 py-2 rounded-xl">
-          <RefreshCw className="w-4 h-4" /> {designs ? 'Refresh' : 'Open'}
+          <RefreshCw className="w-4 h-4" /> Refresh
         </button>
+        <span className="text-sm text-ink2">{designs ? `${designs.length} design${designs.length === 1 ? '' : 's'} sent` : 'Loading…'}</span>
       </div>
       {error && <p className="text-clay font-semibold mb-4">{error}</p>}
       {designs && designs.length === 0 && <p className="text-ink2">No designs yet.</p>}
