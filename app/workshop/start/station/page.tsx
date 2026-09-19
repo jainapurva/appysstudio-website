@@ -64,7 +64,7 @@ export default function StationPage() {
               <p className="text-sm text-ink2">{d.kind}{d.color ? ` · ${d.color}` : ''} · {new Date(d.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
             </div>
             <button onClick={() => open(d)} className="inline-flex items-center gap-1 bg-sage text-white font-semibold px-3 py-2 rounded-lg">
-              <ExternalLink className="w-4 h-4" /> Open in 3D (then Download STL)
+              <ExternalLink className="w-4 h-4" /> Open in 3D (then Download 3MF)
             </button>
             <button onClick={() => download(d)} className="inline-flex items-center gap-1 bg-white border border-ink2/20 font-semibold px-3 py-2 rounded-lg">
               <Download className="w-4 h-4" /> .scad
